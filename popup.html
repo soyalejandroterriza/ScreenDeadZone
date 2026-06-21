@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Screen Dead Zone</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+      background-color: #0b0f19;
+      color: #f8fafc;
+      width: 280px;
+      padding: 16px;
+      overflow: hidden;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      text-align: center;
+    }
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(34, 197, 94, 0.15);
+      border-top-color: #22c55e;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .loading-text {
+      font-size: 13px;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+    .warning-card {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .warning-icon {
+      color: #ef4444;
+      filter: drop-shadow(0 2px 6px rgba(239, 68, 68, 0.3));
+    }
+    .warning-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+    .warning-desc {
+      font-size: 11px;
+      color: #64748b;
+      line-height: 1.4;
+    }
+    .shortcut-badge {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 4px 8px;
+      font-size: 10.5px;
+      color: #cbd5e1;
+      font-weight: bold;
+      margin-top: 6px;
+    }
+    .badge-key {
+      color: #4ade80;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Spinner de carga por defecto -->
+    <div id="loader" class="container">
+      <div class="spinner"></div>
+      <span class="loading-text">Abriendo panel de control...</span>
+    </div>
+
+    <!-- Mensaje de advertencia si es una pestaña del sistema -->
+    <div id="warning" class="warning-card">
+      <svg class="warning-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+        <line x1="12" y1="9" x2="12" y2="13"></line>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>
+      <h3 class="warning-title">No se puede abrir aquí</h3>
+      <p class="warning-desc">Por seguridad, Chrome bloquea extensiones en páginas del sistema (como la pestaña de extensiones, historial o la Web Store).</p>
+      <p class="warning-desc">Abre cualquier sitio web (como Google o tu página de pruebas) y haz clic de nuevo.</p>
+      <div class="shortcut-badge">
+        Atajo: <span class="badge-key">Cmd Derecho + Shift + 0</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Configuración local de extensiones e IDEs
+.vscode/
+.idea/
+*.log
+
+# Antigravity y Gemini Agent Workspaces
+.agents/
+.gemini/
+scratch/
+walkthrough.md
+task.md
+implementation_plan.md
