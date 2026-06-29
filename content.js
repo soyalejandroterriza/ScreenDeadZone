@@ -1203,14 +1203,6 @@
           <!-- CABECERA -->
           <div class="menu-header">
             <div class="header-left">
-              <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="24" height="24">
-                <path d="M 44 110 L 84 110 L 80 96 L 48 96 Z" fill="#475569" />
-                <rect x="52" y="94" width="24" height="12" fill="#64748b" rx="2" />
-                <rect x="14" y="14" width="100" height="80" rx="8" fill="#334155" />
-                <rect x="20" y="20" width="88" height="68" rx="4" fill="#0f172a" />
-                <rect x="20" y="64" width="88" height="24" rx="2" fill="#22c55e" opacity="0.9" />
-                <text x="64" y="79" font-family="sans-serif" font-size="8" font-weight="bold" fill="#ffffff" text-anchor="middle">DZ</text>
-              </svg>
               <div class="header-title-box">
                 <span class="logo-title">ScreenDeadZone</span>
                 <p class="info-p">${chrome.i18n.getMessage("contentDesc") || "Determina una zona de tu pantalla en la que no se muestre el navegador."}</p>
