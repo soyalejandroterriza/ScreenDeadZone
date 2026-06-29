@@ -65,16 +65,20 @@ La extensión está completamente localizada y soporta **8 idiomas nativos** (in
 
 Para ver la extensión en acción, aquí tienes algunas capturas de la interfaz y un caso de uso real:
 
-<p align="center">
-  <b>1. Widget de Reloj Integrado (Anclado a la Izquierda)</b><br>
-  <img src="Screenshots/screenshot_clock.png" alt="Reloj en la Zona Muerta" width="600" style="border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-</p>
+<table border="0" width="100%">
+  <tr>
+    <td align="center" valign="top" width="50%">
+      <b>1. Widget de Reloj Integrado</b><br><br>
+      <img src="Screenshots/screenshot_clock.png" alt="Reloj en la Zona Muerta" style="border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); max-width: 95%;">
+    </td>
+    <td align="center" valign="top" width="50%">
+      <b>2. Integración de Dashboards/Webs mediante Iframe</b><br><br>
+      <img src="Screenshots/screenshot_iframe.png" alt="Iframe en la Zona Muerta" style="border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); max-width: 95%;">
+    </td>
+  </tr>
+</table>
 
-<p align="center">
-  <b>2. Integración de Dashboards/Webs mediante Iframe (Anclado a la Derecha)</b><br>
-  <img src="Screenshots/screenshot_iframe.png" alt="Iframe en la Zona Muerta" width="600" style="border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-</p>
-
+<br>
 <p align="center">
   <b>3. Resultado IRL (En la vida real)</b><br>
   <img src="Screenshots/this.png" alt="Resultado IRL" width="600" style="border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
@@ -116,7 +120,7 @@ Sigue estos sencillos pasos para instalar la extensión de forma manual en tu na
 
 Screen Dead Zone permite cargar cualquier página o recurso web directamente dentro de la zona muerta utilizando iframes. Esto es sumamente útil para integrar en tu espacio de trabajo:
 
-*   **Dashboards de control:** Paneles de domótica (como Home Assistant), paneles de monitorización o gráficas en tempo real.
+*   **Dashboards de control:** Paneles de domótica (como Home Assistant), paneles de monitorización o gráficas en tiempo real.
 *   **Herramientas de productividad:** Calendarios compartidos, gestores de tareas en línea o reproductores multimedia web.
 *   **Recursos locales:** Web apps locales, cámaras de seguridad locales y cualquier contenido que se pueda visualizar a través de un navegador.
 
@@ -131,7 +135,6 @@ Screen Dead Zone permite cargar cualquier página o recurso web directamente den
 ├── content.js         # Script inyectado en las páginas web (Gestión de estilos, DOM, cálculo de bounds y eventos)
 ├── manifest.json      # Definición de la extensión (Manifest V3)
 ├── popup.html/js/css  # Ventana de activación rápida que abre la interfaz de configuración
-├── test_page.html     # Página interactiva local para verificar que todo se redimensiona bien
 ├── Screenshots/       # Capturas de pantalla para la documentación
 ├── thumbnail/         # Imagen miniatura del repositorio
 └── README.md          # Documentación del proyecto (Español)

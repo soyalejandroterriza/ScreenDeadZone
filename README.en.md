@@ -7,6 +7,9 @@
     </td>
     <td valign="top">
       <h2 style="margin-top: 0; border-bottom: none;">Languages</h2>
+      <p style="font-size: 13px; line-height: 1.5; margin-bottom: 15px;">
+        This extension is available in multiple languages. Select your preferred language to read the documentation:
+      </p>
       <ul style="line-height: 1.6; font-size: 14px;">
         <li><a href="README.md">Español 🇪🇸</a></li>
         <li><strong>English 🇬🇧 (Current)</strong></li>
@@ -25,6 +28,7 @@
 
 ## Index
 *   [✨ Key Features](#-key-features)
+*   [📸 Screenshots and Demonstration](#-screenshots-and-demonstration)
 *   [🛡️ Required Permissions](#-required-permissions)
 *   [🚀 Installation](#-installation)
 *   [🔌 Iframe Compatibility](#-iframe-compatibility)
@@ -35,7 +39,7 @@
 
 **Screen Dead Zone** is an open-source Chrome extension built on **Manifest V3** designed to reserve, isolate, and limit a physical portion of your screen (dead zone), preventing the browser from rendering or exposing content under it and limiting the scrolling of the webpage to the selected area.
 
-It is the perfect tool for users with screens having dead pixels on the edges, monitor setups with thick bezels, or simply for those who want to integrate fixed widgets (like digital clocks) and real-time security cameras directly into their browsing space without the website overlapping them.
+It is the perfect tool for users with screens having dead pixels on the edges, monitor setups with thick bezels, or simply for those who want to integrate fixed widgets (like digital clocks) and real-time dashboards directly into their browsing space without the website overlapping them.
 
 ### 🌐 Native Multilingual Support
 The extension is fully localized and supports **8 languages native to the app** (English, Spanish, Portuguese, Simplified Chinese, Hindi, German, French, and Japanese). All interface elements, settings, and descriptions adjust automatically according to your browser's preferred language.
@@ -54,6 +58,31 @@ The extension is fully localized and supports **8 languages native to the app** 
 *   **⏳ Integrated Widgets:** Escalable high-visibility real-time digital clock and date widgets.
 *   **🎨 Customization:** Adjust background/text colors and save setups as **Presets**.
 *   **🍃 Mini Mode (Hide/Show):** Temporarily hide the bar with one click and restore it via the floating button.
+
+---
+
+## 📸 Screenshots and Demonstration
+
+To see the extension in action, here are some interface screenshots and a real-life use case:
+
+<table border="0" width="100%">
+  <tr>
+    <td align="center" valign="top" width="50%">
+      <b>1. Integrated Clock Widget</b><br><br>
+      <img src="Screenshots/screenshot_clock.png" alt="Clock Widget in Dead Zone" style="border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); max-width: 95%;">
+    </td>
+    <td align="center" valign="top" width="50%">
+      <b>2. Dashboard/Iframe Integration</b><br><br>
+      <img src="Screenshots/screenshot_iframe.png" alt="Iframe in Dead Zone" style="border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); max-width: 95%;">
+    </td>
+  </tr>
+</table>
+
+<br>
+<p align="center">
+  <b>3. IRL (In Real Life) Result</b><br>
+  <img src="Screenshots/this.png" alt="IRL Result" width="600" style="border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+</p>
 
 ---
 
@@ -94,7 +123,6 @@ Screen Dead Zone allows you to load any web page or resource directly inside the
 ├── content.js         # Injected content script (Styles, DOM, bounds calculations, and events)
 ├── manifest.json      # Extension definition (Manifest V3)
 ├── popup.html/js/css  # Activation popup window that opens the configuration menu
-├── test_page.html     # Local test page to verify responsive behavior
 ├── Screenshots/       # Documentation screenshots
 ├── thumbnail/         # Repository thumbnail image
 └── README.md          # Documentation project
