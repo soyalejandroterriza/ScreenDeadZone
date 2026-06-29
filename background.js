@@ -34,18 +34,7 @@ chrome.windows.onRemoved.addListener((windowId) => {
   chrome.storage.session.remove([`win_${windowId}`]);
 });
 
-// Escuchar comandos globales (atajos de teclado)
-chrome.commands.onCommand.addListener((command) => {
-  if (command === "toggle-dead-zone") {
-    chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
-      if (tabs && tabs[0]) {
-        chrome.tabs.sendMessage(tabs[0].id, { type: "OPEN_FULLSCREEN_MENU" }, () => {
-          const err = chrome.runtime.lastError;
-        });
-      }
-    });
-  }
-});
+
 
 // Escuchar mensajes de los scripts de contenido y del popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -78,11 +67,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     if (message.type === "GET_TAB_STATE") {
       getWindowState(windowId, (state) => {
-        chrome.commands.getAll((commands) => {
-          const cmd = commands.find(c => c.name === "toggle-dead-zone");
-          state.shortcut = cmd ? cmd.shortcut : "Ctrl+Shift+0";
-          sendResponse(state);
-        });
+        sendResponse(state);
       });
     } 
     

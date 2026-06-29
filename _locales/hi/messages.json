@@ -1,0 +1,122 @@
+{
+  "extName": {
+    "message": "Screen Dead Zone"
+  },
+  "extDesc": {
+    "message": "अपनी स्क्रीन पर एक क्षेत्र निर्धारित करें जहां ब्राउज़र प्रदर्शित नहीं होगा।"
+  },
+  "cmdToggleDesc": {
+    "message": "वर्तमान विंडो में डेड ज़ोन को टॉगल करें"
+  },
+  "popupLoading": {
+    "message": "नियंत्रण कक्ष खोला जा रहा है..."
+  },
+  "popupWarningTitle": {
+    "message": "यहां नहीं खुल सकता"
+  },
+  "popupWarningDesc1": {
+    "message": "सुरक्षा कारणों से, Chrome सिस्टम पृष्ठों (जैसे एक्सटेंशन टैब, इतिहास, या वेब स्टोर) पर एक्सटेंशन को ब्लॉक करता है।"
+  },
+  "popupWarningDesc2": {
+    "message": "कोई भी वेबसाइट (जैसे Google या अपना परीक्षण पृष्ठ) खोलें और फिर से क्लिक करें।"
+  },
+  "popupShortcut": {
+    "message": "शॉर्टकट:"
+  },
+  "contentSettings": {
+    "message": "सेटिंग्स"
+  },
+  "contentLayoutMode": {
+    "message": "लेआउट मोड"
+  },
+  "contentResize": {
+    "message": "आकार बदलें (सामग्री ले जाता है)"
+  },
+  "contentRecommended": {
+    "message": "(अनुशंसित)"
+  },
+  "contentSpacer": {
+    "message": "स्पेसर (सामग्री को कवर करता है)"
+  },
+  "contentBarHeight": {
+    "message": "बार का आकार"
+  },
+  "contentBgColor": {
+    "message": "पृष्ठभूमि का रंग"
+  },
+  "contentFgColor": {
+    "message": "घड़ी का रंग"
+  },
+  "contentTabManager": {
+    "message": "बार टैब"
+  },
+  "contentTabDesc": {
+    "message": "उन्हें बार में टैब के रूप में टॉगल करने के लिए वेबसाइटें जोड़ें। घड़ी डिफ़ॉल्ट रूप से हमेशा उपलब्ध रहेगी।"
+  },
+  "contentBtnAdd": {
+    "message": "जोड़ें"
+  },
+  "contentBtnDelete": {
+    "message": "हटाएं"
+  },
+  "contentConfirmDelete": {
+    "message": "टैब \"[TITLE]\" हटाएं?"
+  },
+  "contentEmptyTabs": {
+    "message": "कोई सहेजा गया टैब नहीं।"
+  },
+  "contentBtnHide": {
+    "message": "छिपाएं"
+  },
+  "contentBtnShow": {
+    "message": "दिखाएं"
+  },
+  "contentTabClock": {
+    "message": "घड़ी"
+  },
+  "contentUrlInvalid": {
+    "message": "अमान्य URL।"
+  },
+  "contentEnableTitle": {
+    "message": "डेड जोन सक्षम करें"
+  },
+  "contentEnableDesc": {
+    "message": "पूरी वर्तमान विंडो पर बार लागू करता है"
+  },
+  "contentColorTitle": {
+    "message": "रंग अनुकूलन"
+  },
+  "contentPresetsTitle": {
+    "message": "सेटिंग्स सेट (प्रीसेट)"
+  },
+  "contentWarningDesc": {
+    "message": "आईफ्रेम और घड़ी टैब उन सभी टैब के बीच साझा नहीं किए जाते हैं जिनमें ScreenDeadZone सक्रिय है, इसलिए प्रत्येक टैब अपनी खुद की घड़ी और आईफ्रेम चलाएगा, जिससे मेमोरी और प्रोसेसिंग की खपत बढ़ जाएगी। ऐसी खिड़की में ScreenDeadZone को सक्रिय न करने पर विचार करें जिसमें बहुत सारे टैब हों।"
+  },
+  "contentPresetSave": {
+    "message": "सहेजें"
+  },
+  "contentPresetInput": {
+    "message": "नाम (उदा. रात, काम)"
+  },
+  "contentActiveIndicator": {
+    "message": "इस विंडो में डेड जोन सक्रिय"
+  },
+  "contentInactiveIndicator": {
+    "message": "डेड जोन अक्षम"
+  },
+  "contentAnchorTitle": {
+    "message": "बार स्थिति"
+  },
+  "contentAnchorTop": {
+    "message": "ऊपर"
+  },
+  "contentAnchorBottom": {
+    "message": "नीचे"
+  },
+  "contentAnchorLeft": {
+    "message": "बाएं"
+  },
+  "contentAnchorRight": {
+    "message": "दाएं"
+  }
+}

@@ -1,22 +1,53 @@
 # Screen Dead Zone 🖥️🛡️
 
+<p align="center">
+  <img src="screendeadzone_logo.png" alt="Screen Dead Zone Logo" width="160" height="160" style="border-radius: 12%;">
+</p>
+
+<p align="center">
+  <img src="thumbnail/thumbnail.png" alt="Screen Dead Zone Thumbnail" width="400" style="border-radius: 12px; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);">
+</p>
+
 **Screen Dead Zone** es una extensión de Chrome de código abierto basada en **Manifest V3** diseñada para reservar, aislar y limitar una porción física de tu pantalla (zona muerta), evitando que el navegador renderice o exponga contenidos bajo ella. 
 
 Es la herramienta perfecta para usuarios con pantallas con píxeles muertos en los bordes, configuraciones de monitores con marcos gruesos, o simplemente para quienes desean integrar widgets fijos (como relojes digitales) y cámaras de seguridad en tiempo real directamente en su espacio de navegación sin que la web se superponga sobre ellos.
 
 ---
 
+## 📸 Capturas de Pantalla y Demostración
+
+Para ver la extensión en acción, aquí tienes algunas capturas de la interfaz y un caso de uso real:
+
+<p align="center">
+  <b>1. Widget de Reloj Integrado (Anclado a la Izquierda)</b><br>
+  <img src="Screenshots/screenshot_clock.png" alt="Reloj en la Zona Muerta" width="600" style="border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+</p>
+
+<p align="center">
+  <b>2. Integración de Cámaras/Widgets mediante Iframe (Anclado a la Derecha)</b><br>
+  <img src="Screenshots/screenshot_iframe.png" alt="Iframe en la Zona Muerta" width="600" style="border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+</p>
+
+<p align="center">
+  <b>3. Resultado IRL (En la vida real)</b><br>
+  <img src="Screenshots/this.png" alt="Resultado IRL" width="600" style="border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+</p>
+
+---
+
 ## ✨ Características Principales
 
-*   **📏 Ajuste de Altura Dinámico:** Configura con precisión en porcentaje (`%`) la altura que deseas reservar en el borde inferior de tu pantalla.
+*   **📐 Ajuste de Medidas Dinámico:** Configura con precisión en porcentaje (de `0%` a `70%`) el tamaño que deseas reservar de tu pantalla.
+*   **📍 Posicionamiento Multidireccional (Anclaje):** Permite anclar la zona muerta en cualquiera de los cuatro bordes de tu monitor: **Arriba (Top)**, **Abajo (Bottom)**, **Izquierda (Left)** o **Derecha (Right)**.
 *   **🛠️ Dos Modos de Ajuste de Layout:**
-    *   **Modo Redimensionar (Resize):** Modifica directamente el viewport (`html`) y aísla el scroll del navegador. Todos los elementos de posición fija (`position: fixed; bottom: 0;`), como barras de chat, banners de cookies o pies de página, se desplazan hacia arriba automáticamente de forma nativa sin quedar ocultos.
-    *   **Modo Espaciador (Spacer):** Añade un margen de relleno (padding) dinámico al final de la página para que puedas hacer scroll por encima de la zona muerta.
-*   **⏳ Widgets de Reloj y Fecha Integrados:** Muestra la hora actual en tiempo real con fuentes escalables de alta visibilidad cuando no uses una URL externa.
-*   **🔌 Integración Iframe (Cámaras de Seguridad, etc.):** Inserta cualquier página o stream web (como cámaras de seguridad locales a través de reproductores WebRTC/HLS tipo `go2rtc` o dashboards de domótica).
+    *   **Modo Redimensionar (Resize) [Recomendado]:** Modifica directamente el viewport (`html`) y aísla el scroll del navegador. Todos los elementos de posición fija (`position: fixed;`), como barras de chat, banners de cookies o menús flotantes, se desplazan hacia el centro automáticamente de forma nativa sin quedar ocultos.
+    *   **Modo Espaciador (Spacer):** Añade un margen de relleno (padding) dinámico al borde de la página correspondiente para que puedas hacer scroll por encima de la zona muerta.
+*   **🔌 Integración Iframe Eficiente:** Inserta cualquier página o stream web (como cámaras de seguridad locales a través de reproductores WebRTC/HLS tipo `go2rtc`, Scrypted o dashboards de domótica tipo Home Assistant).
+*   **⚡ Rendimiento Inteligente (Lazy Loading & Destroy):** Para evitar el consumo excesivo de red, CPU y RAM en segundo plano, las pestañas inactivas o minimizadas destruyen por completo sus iframes de vídeo. Solo la pestaña activa y visible consume recursos reales del sistema.
+*   **⏳ Widgets de Reloj y Fecha Integrados:** Muestra la hora actual en tiempo real con fuentes escalables de alta visibilidad cuando no uses una URL externa, adaptándose dinámicamente si la barra se dispone en vertical u horizontal.
 *   **🎨 Personalización Total:** Configura el color de fondo, el color de los textos/reloj y guarda estas configuraciones como **Presets** rápidos de un solo clic.
-*   **🍃 Minimizado Ágil (Botón Esconder/Mostrar):** Esconde temporalmente la Zona Muerta con un solo clic si necesitas el 100% de la pantalla para una tarea rápida, y recupérala al instante pulsando el botón verde flotante.
-*   **⌨️ Atajo de Teclado Global:** Activa o desactiva la Zona Muerta rápidamente en cualquier pestaña utilizando combinaciones de teclas.
+*   **🍃 Minimizado Ágil (Botón Esconder/Mostrar):** Esconde temporalmente la Zona Muerta con un solo clic si necesitas el 100% de la pantalla para una tarea rápida, y recupérala al instante pulsando el botón flotante correspondiente en cada borde.
+*   **🌐 Soporte Multilingüe (i18n):** Traducido de forma nativa a 8 idiomas: Inglés, Español, Portugués, Chino Simplificado, Hindi, Alemán, Francés y Japonés.
 
 ---
 
@@ -27,7 +58,7 @@ Sigue estos sencillos pasos para instalar la extensión de forma manual en tu na
 1.  **Descarga el código del repositorio:**
     *   Descarga el código como `.zip` y descomprímelo en tu ordenador, o clona el repositorio usando Git:
         ```bash
-        git clone https://github.com/tu-usuario/ScreenDeadZone.git
+        git clone https://github.com/soyalejandroterriza/ScreenDeadZone.git
         ```
 2.  **Abre la página de extensiones en Chrome:**
     *   En la barra de direcciones de tu navegador, introduce `chrome://extensions/`.
@@ -36,18 +67,7 @@ Sigue estos sencillos pasos para instalar la extensión de forma manual en tu na
 4.  **Carga la extensión:**
     *   Haz clic en el botón **"Cargar descomprimida"** en la esquina superior izquierda.
     *   Selecciona la carpeta raíz del proyecto (donde se encuentra el archivo `manifest.json`).
-5.  ¡Listo! El icono de **Screen Dead Zone** aparecerá en tu barra de herramientas.
-
----
-
-## ⌨️ Atajos de Teclado por Defecto
-
-Puedes activar y desactivar la extensión rápidamente con los siguientes atajos:
-
-*   **Mac:** `⌘ Shift 0` (Command + Shift + 0) o clic en el atajo configurado en la extensión.
-*   **Windows / Linux:** `Ctrl Shift 0`
-
-> 💡 *Puedes personalizar este atajo en cualquier momento abriendo `chrome://extensions/shortcuts` en tu navegador.*
+5.  ¡Listo! Abre el menú pulsando en el icono de **Screen Dead Zone** en la barra de herramientas de extensiones de tu navegador para configurarlo.
 
 ---
 
@@ -55,15 +75,15 @@ Puedes activar y desactivar la extensión rápidamente con los siguientes atajos
 
 Si tienes una cámara de seguridad local que transmite mediante el protocolo RTSP y quieres verla en tiempo real en tu Zona Muerta:
 
-1.  Usa un puente local como [go2rtc](https://github.com/AlexxIT/go2rtc) para convertir el feed RTSP a WebRTC (latencia cero).
+1.  Usa un puente local como [go2rtc](https://github.com/AlexxIT/go2rtc) o [Scrypted](https://github.com/koush/scrypted) para convertir el feed RTSP a WebRTC (latencia cero).
 2.  Añade tu cámara en el archivo `go2rtc.yaml`:
     ```yaml
     streams:
       mi_camara: rtsp://usuario:contraseña@IP_LOCAL:554/stream
     ```
-3.  Inicia `go2rtc` y abre `http://localhost:1984`.
+3.  Inicia `go2rtc` and abre `http://localhost:1984`.
 4.  Copia el enlace de WebRTC (ej. `http://localhost:1984/stream.html?src=mi_camara`).
-5.  Abre el menú de configuración de Screen Dead Zone, selecciona el modo **Iframe** y pega esa URL.
+5.  Abre el menú de configuración de Screen Dead Zone, añade la URL y disfruta de tu stream en tiempo real compartiendo el mismo estado de pestañas.
 
 ---
 
@@ -71,11 +91,14 @@ Si tienes una cámara de seguridad local que transmite mediante el protocolo RTS
 
 ```text
 ├── icons/             # Iconos oficiales de la extensión
-├── background.js      # Script de servicio de fondo (Broker de mensajería y persistencia de pestañas)
-├── content.js         # Script inyectado en las páginas web (Gestión de estilos, DOM y eventos)
+├── _locales/          # Traducciones oficiales del proyecto (i18n)
+├── background.js      # Script de servicio de fondo (Persistencia y broker de mensajería)
+├── content.js         # Script inyectado en las páginas web (Gestión de estilos, DOM, cálculo de bounds y eventos)
 ├── manifest.json      # Definición de la extensión (Manifest V3)
 ├── popup.html/js/css  # Ventana de activación rápida que abre la interfaz de configuración
 ├── test_page.html     # Página interactiva local para verificar que todo se redimensiona bien
+├── Screenshots/       # Capturas de pantalla para la documentación
+├── thumbnail/         # Imagen miniatura del repositorio
 └── README.md          # Documentación del proyecto
 ```
 

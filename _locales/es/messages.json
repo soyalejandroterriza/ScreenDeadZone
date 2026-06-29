@@ -1,0 +1,122 @@
+{
+  "extName": {
+    "message": "Screen Dead Zone"
+  },
+  "extDesc": {
+    "message": "Determina una zona de tu pantalla en la que no se muestre el navegador."
+  },
+  "cmdToggleDesc": {
+    "message": "Activar/Desactivar la Zona Muerta en la ventana actual"
+  },
+  "popupLoading": {
+    "message": "Abriendo panel de control..."
+  },
+  "popupWarningTitle": {
+    "message": "No se puede abrir aquí"
+  },
+  "popupWarningDesc1": {
+    "message": "Por seguridad, Chrome bloquea extensiones en páginas del sistema (como la pestaña de extensiones, historial o la Web Store)."
+  },
+  "popupWarningDesc2": {
+    "message": "Abre cualquier sitio web (como Google o tu página de pruebas) y haz clic de nuevo."
+  },
+  "popupShortcut": {
+    "message": "Atajo:"
+  },
+  "contentSettings": {
+    "message": "Ajustes"
+  },
+  "contentLayoutMode": {
+    "message": "Modo de Diseño"
+  },
+  "contentResize": {
+    "message": "Redimensionar (Mueve el contenido)"
+  },
+  "contentRecommended": {
+    "message": "(Recomendado)"
+  },
+  "contentSpacer": {
+    "message": "Espaciador (Tapa el contenido)"
+  },
+  "contentBarHeight": {
+    "message": "Tamaño de la Barra"
+  },
+  "contentBgColor": {
+    "message": "Color de Fondo"
+  },
+  "contentFgColor": {
+    "message": "Color del Reloj"
+  },
+  "contentTabManager": {
+    "message": "Pestañas de la Barra"
+  },
+  "contentTabDesc": {
+    "message": "Añade webs para alternarlas como pestañas en la barra. Por defecto siempre tendrás la del Reloj."
+  },
+  "contentBtnAdd": {
+    "message": "Añadir"
+  },
+  "contentBtnDelete": {
+    "message": "Eliminar"
+  },
+  "contentConfirmDelete": {
+    "message": "¿Eliminar la pestaña \"[TITLE]\"?"
+  },
+  "contentEmptyTabs": {
+    "message": "No tienes pestañas guardadas."
+  },
+  "contentBtnHide": {
+    "message": "Esconder"
+  },
+  "contentBtnShow": {
+    "message": "Mostrar"
+  },
+  "contentTabClock": {
+    "message": "Reloj"
+  },
+  "contentUrlInvalid": {
+    "message": "URL no válida."
+  },
+  "contentEnableTitle": {
+    "message": "Activar Zona Muerta"
+  },
+  "contentEnableDesc": {
+    "message": "Aplica la barra a toda la ventana actual"
+  },
+  "contentColorTitle": {
+    "message": "Personalización de Colores"
+  },
+  "contentPresetsTitle": {
+    "message": "Sets de Ajustes (Presets)"
+  },
+  "contentWarningDesc": {
+    "message": "Los iFrames y la pestaña del reloj no son compartidos entre todas las pestañas que contengan ScreenDeadZone, por lo que cada una de las pestañas tendrá su propio reloj y su propio iFrame, aumentando el consumo de memoria y procesamiento. Considera el no activar ScreenDeadZone en una ventana que contenga demasiadas pestañas."
+  },
+  "contentPresetSave": {
+    "message": "Guardar"
+  },
+  "contentPresetInput": {
+    "message": "Nombre (ej. Noche, Trabajo)"
+  },
+  "contentActiveIndicator": {
+    "message": "Zona Muerta Activa en esta Ventana"
+  },
+  "contentInactiveIndicator": {
+    "message": "Zona Muerta Desactivada"
+  },
+  "contentAnchorTitle": {
+    "message": "Posición de Anclaje"
+  },
+  "contentAnchorTop": {
+    "message": "Arriba"
+  },
+  "contentAnchorBottom": {
+    "message": "Abajo"
+  },
+  "contentAnchorLeft": {
+    "message": "Izquierda"
+  },
+  "contentAnchorRight": {
+    "message": "Derecha"
+  }
+}

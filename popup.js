@@ -1,4 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // Translate UI
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const message = chrome.i18n.getMessage(el.getAttribute('data-i18n'));
+    if (message) el.textContent = message;
+  });
+
   const loader = document.getElementById('loader');
   const warning = document.getElementById('warning');
 

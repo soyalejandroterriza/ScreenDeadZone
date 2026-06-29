@@ -4,110 +4,96 @@
   window.hasScreenDeadZoneInjected = true;
 
   // Configuraciones globales por defecto
-  let currentHeight = 15; // altura en %
+  let currentHeight = 15; // tamaño en %
   let isEnabled = false;  // estado activo de la ventana actual
   let layoutMode = 'resize';
+  let anchorPos = 'bottom'; // 'top', 'bottom', 'left', 'right'
   let bgColor = '#000000'; // color de fondo por defecto
   let fgColor = '#ffffff'; // color de texto por defecto
-  let displayMode = 'clock'; // 'clock' o 'iframe'
-  let embedUrl = ''; // URL a embeber en la zona muerta
-  let savedPresets = []; // Lista de presets guardados
-  let shortcutText = 'Cmd Derecho + Shift + 0'; // Atajo de teclado configurado en Chrome
+  let embedUrls = []; // Lista de URLs
+  let activeTabId = 'clock'; 
+  let savedPresets = [];
 
   let host = null;
   let shadow = null;
-  let spacer = null;
   let globalStyleEl = null;
   let clockInterval = null;
-  let isMinimized = false; // Estado temporal para esconder la barra en la pestaña actual
+  let isMinimized = false;
 
-  // Elementos del menú de configuración a pantalla completa
   let menuHost = null;
   let menuShadow = null;
 
-  // Dar formato amigable al atajo de teclado devuelto por Chrome
-  const formatShortcut = (str) => {
-    if (!str) return "Cmd Derecho + Shift + 0";
-    if (str === "") return "Sin configurar (hazlo en chrome://extensions/shortcuts)";
-    return str
-      .replace("Command+", "⌘ ")
-      .replace("Shift+", "⇧ ")
-      .replace("Ctrl+", "Ctrl ")
-      .replace("Alt+", "Alt ");
-  };
-
-  // Inicializar variables CSS globales en el documentElement
   const initStyles = () => {
     if (globalStyleEl) return;
     globalStyleEl = document.createElement('style');
     globalStyleEl.id = 'screen-dead-zone-global-styles';
     globalStyleEl.textContent = `
       :root {
-        --sdz-height: 0px;
-        --sdz-height-percent: 0%;
+        --sdz-size: 0px;
+        --sdz-size-percent: 0%;
       }
       
-      /* MODO RESIZE: Redimensiona la altura del HTML e aísla la barra de scroll */
+      /* MODO RESIZE */
       html.sdz-active.sdz-mode-resize {
-        height: calc(100% - var(--sdz-height)) !important;
-        overflow: hidden !important; /* Desactiva la barra de scroll del viewport general */
+        overflow: hidden !important; 
         box-sizing: border-box !important;
-        transform: translate3d(0, 0, 0) !important; /* Crea un contexto de contención para elementos position: fixed */
+        transform: translate3d(0, 0, 0) !important;
       }
+      html.sdz-active.sdz-mode-resize.sdz-anchor-bottom,
+      html.sdz-active.sdz-mode-resize.sdz-anchor-top {
+        height: calc(100% - var(--sdz-size)) !important;
+      }
+      html.sdz-active.sdz-mode-resize.sdz-anchor-left,
+      html.sdz-active.sdz-mode-resize.sdz-anchor-right {
+        width: calc(100% - var(--sdz-size)) !important;
+      }
+      html.sdz-active.sdz-mode-resize.sdz-anchor-top {
+        transform: translateY(var(--sdz-size)) !important;
+      }
+      html.sdz-active.sdz-mode-resize.sdz-anchor-left {
+        transform: translateX(var(--sdz-size)) !important;
+      }
+
       html.sdz-active.sdz-mode-resize body {
         height: 100% !important;
-        overflow-y: auto !important; /* Muestra scroll únicamente en el body, frenándolo sobre la zona muerta */
+        overflow-y: auto !important; 
+        overflow-x: auto !important;
         box-sizing: border-box !important;
         position: relative !important;
       }
 
-      /* MODO SPACER: Añade padding al final */
+      /* MODO SPACER */
       html.sdz-active.sdz-mode-spacer {
         box-sizing: border-box !important;
       }
       html.sdz-active.sdz-mode-spacer body {
-        padding-bottom: var(--sdz-height) !important;
         box-sizing: border-box !important;
+      }
+      html.sdz-active.sdz-mode-spacer.sdz-anchor-bottom body {
+        padding-bottom: var(--sdz-size) !important;
+      }
+      html.sdz-active.sdz-mode-spacer.sdz-anchor-top body {
+        padding-top: var(--sdz-size) !important;
+      }
+      html.sdz-active.sdz-mode-spacer.sdz-anchor-left body {
+        padding-left: var(--sdz-size) !important;
+      }
+      html.sdz-active.sdz-mode-spacer.sdz-anchor-right body {
+        padding-right: var(--sdz-size) !important;
       }
     `;
     document.documentElement.appendChild(globalStyleEl);
   };
   initStyles();
 
-  // Calcular la altura real en px
-  const getPxHeight = (percent) => {
+  const getPxSize = (percent) => {
     if (!isEnabled) return 0;
+    if (anchorPos === 'left' || anchorPos === 'right') {
+      return (window.innerWidth * percent) / 100;
+    }
     return (window.innerHeight * percent) / 100;
   };
 
-  // Crear o actualizar el espaciador (solo para modo spacer)
-  const updateSpacer = (pxHeight) => {
-    if (layoutMode === 'spacer' && isEnabled && currentHeight > 0) {
-      if (!spacer) {
-        spacer = document.createElement('div');
-        spacer.id = 'screen-dead-zone-spacer';
-        spacer.style.setProperty('display', 'block', 'important');
-        spacer.style.setProperty('clear', 'both', 'important');
-        spacer.style.setProperty('pointer-events', 'none', 'important');
-        spacer.style.setProperty('width', '100%', 'important');
-        spacer.style.setProperty('background', 'transparent', 'important');
-        spacer.style.setProperty('border', 'none', 'important');
-        spacer.style.setProperty('margin', '0', 'important');
-      }
-      spacer.style.setProperty('height', `${pxHeight}px`, 'important');
-      
-      if (document.body && spacer.parentNode !== document.body) {
-        document.body.appendChild(spacer);
-      }
-    } else {
-      if (spacer && spacer.parentNode) {
-        spacer.parentNode.removeChild(spacer);
-      }
-      spacer = null;
-    }
-  };
-
-  // Detener el reloj
   const stopClock = () => {
     if (clockInterval) {
       clearInterval(clockInterval);
@@ -115,36 +101,26 @@
     }
   };
 
-  // Iniciar el reloj digital y la fecha
   const startClock = (containerEl) => {
     stopClock();
-
     const timeEl = containerEl.querySelector('.clock-time');
     const dateEl = containerEl.querySelector('.clock-date');
-
     if (!timeEl || !dateEl) return;
-
     const updateTime = () => {
       const now = new Date();
-
-      // Formato XX:XX:XX
       const hours = String(now.getHours()).padStart(2, '0');
       const minutes = String(now.getMinutes()).padStart(2, '0');
       const seconds = String(now.getSeconds()).padStart(2, '0');
       timeEl.textContent = `${hours}:${minutes}:${seconds}`;
-
-      // Formato DD/MM/YYYY
       const day = String(now.getDate()).padStart(2, '0');
       const month = String(now.getMonth() + 1).padStart(2, '0');
       const year = now.getFullYear();
       dateEl.textContent = `${day}/${month}/${year}`;
     };
-
     updateTime();
     clockInterval = setInterval(updateTime, 1000);
   };
 
-  // Eliminar elementos inyectados de la barra
   const removeElements = () => {
     stopClock();
     if (host && host.parentNode) {
@@ -152,48 +128,137 @@
     }
     host = null;
     shadow = null;
-
-    if (spacer && spacer.parentNode) {
-      spacer.parentNode.removeChild(spacer);
-    }
-    spacer = null;
   };
 
-  // Actualizar el DOM y el CSS de la página
-  const updateLayout = () => {
-    // Al haber un cambio global de layout, restauramos el estado minimizado
-    isMinimized = false;
 
-    const pxHeight = getPxHeight(currentHeight);
-    const percentHeight = isEnabled ? currentHeight : 0;
-
-    // Actualizar propiedades CSS en la raíz del documento
-    document.documentElement.style.setProperty('--sdz-height', `${pxHeight}px`);
-    document.documentElement.style.setProperty('--sdz-height-percent', `${percentHeight}%`);
-
-    if (isEnabled && currentHeight > 0) {
-      // Limpiar clases previas de modo
-      document.documentElement.classList.remove('sdz-mode-resize', 'sdz-mode-spacer');
-      document.body?.classList.remove('sdz-mode-resize', 'sdz-mode-spacer');
-
-      // Añadir clases activas
-      document.documentElement.classList.add('sdz-active', `sdz-mode-${layoutMode}`);
-      document.body?.classList.add('sdz-active', `sdz-mode-${layoutMode}`);
-
-      createDeadZoneElement();
-      updateSpacer(pxHeight);
-
-      if (host) {
-        host.style.setProperty('height', `${pxHeight}px`, 'important');
-        host.style.setProperty('display', 'block', 'important');
-        if (layoutMode === 'resize') {
-          host.style.setProperty('bottom', 'calc(-1 * var(--sdz-height))', 'important');
-        } else {
-          host.style.setProperty('bottom', '0', 'important');
+  const updateMenuBounds = () => {
+    if (!menuHost) return;
+    
+    setTimeout(() => {
+      if (!menuHost) return;
+      if (!isEnabled || currentHeight === 0) {
+        menuHost.style.setProperty('top', '0', 'important');
+        menuHost.style.setProperty('left', '0', 'important');
+        menuHost.style.setProperty('width', '100vw', 'important');
+        menuHost.style.setProperty('height', '100vh', 'important');
+        return;
+      }
+      
+      if (layoutMode === 'resize') {
+        // En modo Resize, el elemento HTML está transformado y recortado. 
+        // Actúa como el 'containing block' para fixed, así que 0,0,100%,100% es la zona segura.
+        menuHost.style.setProperty('top', '0', 'important');
+        menuHost.style.setProperty('left', '0', 'important');
+        menuHost.style.setProperty('width', '100%', 'important');
+        menuHost.style.setProperty('height', '100%', 'important');
+      } else {
+        // En modo Spacer, calculamos el desplazamiento físico respecto a la ventana
+        const pxSize = getPxSize(currentHeight);
+        let top = 0, left = 0, width = window.innerWidth, height = window.innerHeight;
+        
+        if (anchorPos === 'left') {
+           left = pxSize;
+           width = window.innerWidth - pxSize;
+        } else if (anchorPos === 'right') {
+           width = window.innerWidth - pxSize;
+        } else if (anchorPos === 'top') {
+           top = pxSize;
+           height = window.innerHeight - pxSize;
+        } else if (anchorPos === 'bottom') {
+           height = window.innerHeight - pxSize;
         }
         
-        // Habilitar clics interactivos si hay un iframe, de lo contrario dejar pasar los clics
-        if (displayMode === 'iframe' && embedUrl) {
+        menuHost.style.setProperty('top', top + 'px', 'important');
+        menuHost.style.setProperty('left', left + 'px', 'important');
+        menuHost.style.setProperty('width', width + 'px', 'important');
+        menuHost.style.setProperty('height', height + 'px', 'important');
+      }
+    }, 60);
+  };
+
+  const updateActiveIframe = () => {
+    if (!shadow) return;
+    const container = shadow.querySelector('.container');
+    if (!container) return;
+
+    // Eliminar iframe existente si lo hay
+    container.querySelectorAll('.dz-iframe').forEach(iframe => iframe.remove());
+
+    // Solo inyectar si la pestaña actual es visible, hay una URL activa y la barra está habilitada y no minimizada
+    const isVisible = !document.hidden;
+    const isUrlTab = activeTabId && activeTabId.startsWith('url-');
+
+    if (isVisible && isUrlTab && isEnabled && currentHeight > 0 && !isMinimized) {
+      const idx = parseInt(activeTabId.replace('url-', ''), 10);
+      if (embedUrls && embedUrls[idx]) {
+        const urlObj = embedUrls[idx];
+        const iframe = document.createElement('iframe');
+        iframe.className = 'dz-iframe';
+        iframe.id = `iframe-${activeTabId}`;
+        iframe.src = urlObj.url;
+        iframe.style.setProperty('width', '100%', 'important');
+        iframe.style.setProperty('height', '100%', 'important');
+        iframe.style.setProperty('border', 'none', 'important');
+        iframe.style.setProperty('background', 'transparent', 'important');
+        iframe.style.setProperty('overflow', 'auto', 'important');
+        
+        const tabsContainer = container.querySelector('.dz-tabs-container');
+        if (tabsContainer) {
+          container.insertBefore(iframe, tabsContainer);
+        } else {
+          container.appendChild(iframe);
+        }
+      }
+    }
+  };
+
+  const updateLayout = () => {
+    isMinimized = false;
+
+    const pxSize = getPxSize(currentHeight);
+    const percentSize = isEnabled ? currentHeight : 0;
+
+    document.documentElement.style.setProperty('--sdz-size', `${pxSize}px`);
+    document.documentElement.style.setProperty('--sdz-size-percent', `${percentSize}%`);
+
+    const anchorClasses = ['sdz-anchor-top', 'sdz-anchor-bottom', 'sdz-anchor-left', 'sdz-anchor-right'];
+
+    if (isEnabled && currentHeight > 0) {
+      document.documentElement.classList.remove('sdz-mode-resize', 'sdz-mode-spacer', ...anchorClasses);
+      document.body?.classList.remove('sdz-mode-resize', 'sdz-mode-spacer');
+
+      document.documentElement.classList.add('sdz-active', `sdz-mode-${layoutMode}`, `sdz-anchor-${anchorPos}`);
+      document.body?.classList.add('sdz-active', `sdz-mode-${layoutMode}`);
+
+      updateMenuBounds();
+
+      createDeadZoneElement();
+
+      if (host) {
+        host.style.setProperty('display', 'block', 'important');
+        
+        host.style.removeProperty('top');
+        host.style.removeProperty('bottom');
+        host.style.removeProperty('left');
+        host.style.removeProperty('right');
+        host.style.removeProperty('width');
+        host.style.removeProperty('height');
+
+        const offset = layoutMode === 'resize' ? `calc(-1 * var(--sdz-size))` : '0';
+
+        if (anchorPos === 'left' || anchorPos === 'right') {
+          host.style.setProperty('width', `${pxSize}px`, 'important');
+          host.style.setProperty('height', '100%', 'important');
+          host.style.setProperty('top', '0', 'important');
+          host.style.setProperty(anchorPos, offset, 'important');
+        } else {
+          host.style.setProperty('height', `${pxSize}px`, 'important');
+          host.style.setProperty('width', '100%', 'important');
+          host.style.setProperty('left', '0', 'important');
+          host.style.setProperty(anchorPos, offset, 'important');
+        }
+        
+        if (activeTabId !== 'clock') {
           host.style.setProperty('pointer-events', 'auto', 'important');
         } else {
           host.style.setProperty('pointer-events', 'none', 'important');
@@ -202,10 +267,11 @@
         const container = shadow?.querySelector('.container');
         if (container) {
           container.classList.remove('minimized');
+          container.setAttribute('data-anchor', anchorPos);
           container.style.setProperty('--sdz-bg-color', bgColor);
           container.style.setProperty('--sdz-fg-color', fgColor);
           
-          if (pxHeight < 45) {
+          if (pxSize < 45) {
             container.classList.add('mini-mode');
           } else {
             container.classList.remove('mini-mode');
@@ -214,65 +280,73 @@
 
         const showBtn = shadow?.querySelector('.show-btn');
         if (showBtn) {
-          showBtn.style.display = 'none';
+           showBtn.style.display = 'none';
+           showBtn.className = 'toggle-btn show-btn pos-' + anchorPos;
         }
       }
     } else {
-      document.documentElement.classList.remove('sdz-active', 'sdz-mode-resize', 'sdz-mode-spacer');
+      document.documentElement.classList.remove('sdz-active', 'sdz-mode-resize', 'sdz-mode-spacer', ...anchorClasses);
       document.body?.classList.remove('sdz-active', 'sdz-mode-resize', 'sdz-mode-spacer');
+      updateMenuBounds();
       removeElements();
     }
+    updateActiveIframe();
   };
 
-  // Aplicar temporalmente el estado minimizado (escondido) de la barra
   const setMinimizedState = (minimized) => {
     isMinimized = minimized;
     if (!shadow) return;
 
     const container = shadow.querySelector('.container');
     const showBtn = shadow.querySelector('.show-btn');
+    const anchorClasses = ['sdz-anchor-top', 'sdz-anchor-bottom', 'sdz-anchor-left', 'sdz-anchor-right'];
 
     if (isMinimized) {
-      // Colapsar la barra a 0px
-      document.documentElement.style.setProperty('--sdz-height', '0px');
-      document.documentElement.style.setProperty('--sdz-height-percent', '0%');
+      document.documentElement.style.setProperty('--sdz-size', '0px');
+      document.documentElement.style.setProperty('--sdz-size-percent', '0%');
       
-      // Quitar clases activas del layout para restaurar el scroll/diseño normal
-      document.documentElement.classList.remove('sdz-active', 'sdz-mode-resize', 'sdz-mode-spacer');
+      document.documentElement.classList.remove('sdz-active', 'sdz-mode-resize', 'sdz-mode-spacer', ...anchorClasses);
       document.body?.classList.remove('sdz-active', 'sdz-mode-resize', 'sdz-mode-spacer');
 
       if (host) {
-        host.style.setProperty('height', '0px', 'important');
-        host.style.setProperty('bottom', '0', 'important');
-        // Debe permitir eventos para poder hacer clic en "Mostrar"
+        if (anchorPos === 'left' || anchorPos === 'right') {
+           host.style.setProperty('width', '0px', 'important');
+           host.style.setProperty(anchorPos, '0', 'important');
+        } else {
+           host.style.setProperty('height', '0px', 'important');
+           host.style.setProperty(anchorPos, '0', 'important');
+        }
         host.style.setProperty('pointer-events', 'auto', 'important');
       }
       
       if (container) container.classList.add('minimized');
-      if (showBtn) showBtn.style.display = 'flex';
+      if (showBtn) {
+         showBtn.style.display = 'flex';
+         showBtn.className = 'toggle-btn show-btn pos-' + anchorPos;
+      }
       
       stopClock();
-      updateSpacer(0);
     } else {
-      // Restaurar la barra
-      const pxHeight = getPxHeight(currentHeight);
-      document.documentElement.style.setProperty('--sdz-height', `${pxHeight}px`);
-      document.documentElement.style.setProperty('--sdz-height-percent', `${currentHeight}%`);
+      const pxSize = getPxSize(currentHeight);
+      document.documentElement.style.setProperty('--sdz-size', `${pxSize}px`);
+      document.documentElement.style.setProperty('--sdz-size-percent', `${currentHeight}%`);
       
-      // Restaurar clases activas del layout
       if (isEnabled && currentHeight > 0) {
-        document.documentElement.classList.add('sdz-active', `sdz-mode-${layoutMode}`);
+        document.documentElement.classList.add('sdz-active', `sdz-mode-${layoutMode}`, `sdz-anchor-${anchorPos}`);
         document.body?.classList.add('sdz-active', `sdz-mode-${layoutMode}`);
       }
 
       if (host) {
-        host.style.setProperty('height', `${pxHeight}px`, 'important');
-        if (layoutMode === 'resize') {
-          host.style.setProperty('bottom', 'calc(-1 * var(--sdz-height))', 'important');
+        const offset = layoutMode === 'resize' ? `calc(-1 * var(--sdz-size))` : '0';
+        if (anchorPos === 'left' || anchorPos === 'right') {
+          host.style.setProperty('width', `${pxSize}px`, 'important');
+          host.style.setProperty(anchorPos, offset, 'important');
         } else {
-          host.style.setProperty('bottom', '0', 'important');
+          host.style.setProperty('height', `${pxSize}px`, 'important');
+          host.style.setProperty(anchorPos, offset, 'important');
         }
-        if (displayMode === 'iframe' && embedUrl) {
+        
+        if (activeTabId !== 'clock') {
           host.style.setProperty('pointer-events', 'auto', 'important');
         } else {
           host.style.setProperty('pointer-events', 'none', 'important');
@@ -282,24 +356,20 @@
       if (container) container.classList.remove('minimized');
       if (showBtn) showBtn.style.display = 'none';
       
-      if (displayMode !== 'iframe' || !embedUrl) {
-        startClock(container);
-      }
-      updateSpacer(pxHeight);
+      if (activeTabId === 'clock') startClock(container);
+      else stopClock();
     }
+    updateMenuBounds();
+    updateActiveIframe();
   };
-
   // Crear la barra de la zona muerta
   const createDeadZoneElement = () => {
     if (!document.body) return;
 
     if (host) {
-      const container = shadow.querySelector('.container');
-      const hasIframe = !!container.querySelector('iframe');
-      const shouldHaveIframe = (displayMode === 'iframe' && !!embedUrl);
-      const currentIframeSrc = hasIframe ? container.querySelector('iframe').src : '';
-      
-      if (hasIframe !== shouldHaveIframe || (shouldHaveIframe && currentIframeSrc !== embedUrl)) {
+      const currentUrlsStr = host.getAttribute('data-urls') || '[]';
+      const newUrlsStr = JSON.stringify(embedUrls);
+      if (currentUrlsStr !== newUrlsStr) {
         removeElements();
       }
     }
@@ -307,6 +377,7 @@
     if (!host) {
       host = document.createElement('div');
       host.id = 'screen-dead-zone-host';
+      host.setAttribute('data-urls', JSON.stringify(embedUrls));
       host.style.setProperty('position', 'fixed', 'important');
       host.style.setProperty('bottom', '0', 'important');
       host.style.setProperty('left', '0', 'important');
@@ -315,16 +386,17 @@
 
       shadow = host.attachShadow({ mode: 'open' });
       
-      let innerContentHtml = '';
-      if (displayMode === 'iframe' && embedUrl) {
-        innerContentHtml = `<iframe src="${embedUrl}" style="width: 100%; height: 100%; border: none; background: transparent; overflow: auto;"></iframe>`;
-      } else {
-        innerContentHtml = `
-          <div class="clock-widget">
-            <div class="clock-time">00:00:00</div>
-            <div class="clock-date">01/01/2026</div>
-          </div>
-        `;
+      let tabsHtml = '';
+      
+      if (embedUrls && embedUrls.length > 0) {
+        const clockActive = activeTabId === 'clock';
+        tabsHtml += `<button class="toggle-btn dz-tab ${clockActive ? 'active' : ''}" data-target="clock">${chrome.i18n.getMessage("contentTabClock")}</button>`;
+        embedUrls.forEach((urlObj, idx) => {
+          const tabId = 'url-' + idx;
+          const isActive = activeTabId === tabId;
+          const title = urlObj.title || urlObj.url;
+          tabsHtml += `<button class="toggle-btn dz-tab ${isActive ? 'active' : ''}" data-target="${tabId}">${title}</button>`;
+        });
       }
 
       shadow.innerHTML = `
@@ -348,42 +420,59 @@
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             overflow: hidden;
           }
+          .clock-container {
+            display: ${activeTabId === 'clock' ? 'flex' : 'none'};
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+          }
           .clock-widget {
+            text-align: center;
+            user-select: none;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 2px;
-            pointer-events: none;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            width: 100%;
+            height: 100%;
           }
           .clock-time {
-            font-size: min(17vw, calc(var(--sdz-height) * 0.52)) !important;
+            font-size: min(20vw, calc(var(--sdz-size) * 0.6)) !important;
             font-weight: 700;
-            letter-spacing: 0.02em;
+            letter-spacing: 0.01em;
             line-height: 1;
+            margin-bottom: 4px;
+            font-variant-numeric: tabular-nums;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+          }
+          .container[data-anchor="left"] .clock-time,
+          .container[data-anchor="right"] .clock-time {
+            font-size: min(20vh, calc(var(--sdz-size) * 0.4)) !important;
           }
           .clock-date {
-            font-size: min(7vw, calc(var(--sdz-height) * 0.18)) !important;
+            font-size: min(6vw, calc(var(--sdz-size) * 0.2)) !important;
             font-weight: 500;
             opacity: 0.8;
             letter-spacing: 0.05em;
             line-height: 1;
-            margin-top: 6px;
+            margin-top: 4px;
+            text-transform: uppercase;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+          }
+          .container[data-anchor="left"] .clock-date,
+          .container[data-anchor="right"] .clock-date {
+            font-size: min(6vh, calc(var(--sdz-size) * 0.15)) !important;
           }
           .container.mini-mode .clock-date {
             display: none;
           }
           .container.mini-mode .clock-time {
-            font-size: 13px;
+            font-size: 20px;
+            margin-bottom: 0;
           }
-          iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            display: block;
-          }
-
+          
           /* Botones para Esconder/Mostrar la barra de forma ágil */
           .toggle-btn {
             background: rgba(15, 23, 42, 0.8);
@@ -415,60 +504,108 @@
             flex-shrink: 0;
           }
           
-          /* Botón Esconder (posicionado en el borde superior central de la barra) */
-          .hide-btn {
+          /* Contenedor de pestañas */
+          .dz-tabs-container {
             position: absolute;
-            top: 6px;
+            bottom: 8px;
             left: 50%;
             transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            z-index: 2147483647;
             opacity: 0.35;
-            transition: opacity 0.2s ease, transform 0.2s ease;
+            transition: opacity 0.2s ease;
           }
-          .container:hover .hide-btn {
-            opacity: 0.85;
+          .container[data-anchor="top"] .dz-tabs-container {
+            bottom: auto;
+            top: 8px;
           }
-          .hide-btn:hover {
-            opacity: 1 !important;
-            transform: translateX(-50%) !important;
+          .container[data-anchor="left"] .dz-tabs-container,
+          .container[data-anchor="right"] .dz-tabs-container {
+            flex-direction: column;
+            left: auto;
+            right: auto;
+            transform: translateY(-50%);
+            top: 50%;
+            bottom: auto;
+          }
+          .container[data-anchor="left"] .dz-tabs-container { right: 8px; }
+          .container[data-anchor="right"] .dz-tabs-container { left: 8px; }
+          
+          .container[data-anchor="left"] .toggle-btn,
+          .container[data-anchor="right"] .toggle-btn {
+            flex-direction: column;
+            padding: 8px;
+          }
+          .container[data-anchor="left"] .toggle-btn span,
+          .container[data-anchor="right"] .toggle-btn span {
+            display: none; /* Oculta texto en la barra vertical por falta de espacio */
+          }
+          .container[data-anchor="left"] .dz-tab.active span,
+          .container[data-anchor="right"] .dz-tab.active span {
+            display: none;
           }
 
-          /* Botón Mostrar (flota en la parte inferior central cuando está minimizada) */
+          .container:hover .dz-tabs-container {
+            opacity: 1;
+          }
+          
+          .dz-tab.active {
+            color: white;
+            background: rgba(30, 41, 59, 0.95);
+            border-color: #ffffff !important;
+          }
+
+          .hide-btn {
+            opacity: 1;
+            position: static;
+            transform: none;
+          }
+
           .show-btn {
             position: fixed;
-            bottom: 12px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: none;
-            background: rgba(22, 163, 74, 0.9); /* Fondo verde */
-            border-color: rgba(255, 255, 255, 0.2);
-            color: white;
             z-index: 2147483647;
+            opacity: 0.65;
+            display: none;
+            transition: opacity 0.2s ease;
           }
-          .show-btn:hover {
-            background: #15803d;
-            transform: translateX(-50%) scale(1.03);
-          }
+          .show-btn.pos-bottom { bottom: 12px; left: 50%; transform: translateX(-50%); }
+          .show-btn.pos-top { top: 12px; left: 50%; transform: translateX(-50%); }
+          .show-btn.pos-left { left: 12px; top: 50%; transform: translateY(-50%); flex-direction: column; }
+          .show-btn.pos-right { right: 12px; top: 50%; transform: translateY(-50%); flex-direction: column; }
+          .show-btn.pos-left span, .show-btn.pos-right span { display: none; }
+          .show-btn:hover { opacity: 1 !important; }
 
           .container.minimized {
             display: none !important;
           }
         </style>
         <div class="container">
-          ${innerContentHtml}
+          <div class="clock-container">
+            <div class="clock-widget">
+              <div class="clock-time">00:00:00</div>
+              <div class="clock-date">01/01/2026</div>
+            </div>
+          </div>
+
           
-          <button class="toggle-btn hide-btn" title="Esconder temporalmente la Zona Muerta">
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-            <span>Esconder</span>
-          </button>
+          <div class="dz-tabs-container">
+            <button class="toggle-btn hide-btn" title="${chrome.i18n.getMessage("contentBtnHide")}">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+              <span>${chrome.i18n.getMessage("contentBtnHide")}</span>
+            </button>
+            ${tabsHtml}
+          </div>
         </div>
         
-        <button class="toggle-btn show-btn" title="Mostrar la Zona Muerta de nuevo">
+        <button class="toggle-btn show-btn" title="${chrome.i18n.getMessage("contentBtnShow")}">
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="18 15 12 9 6 15"></polyline>
           </svg>
-          <span>Mostrar</span>
+          <span>${chrome.i18n.getMessage("contentBtnShow")}</span>
         </button>
       `;
 
@@ -485,12 +622,45 @@
         e.stopPropagation();
         setMinimizedState(false);
       });
+      
+      // Eventos para pestañas
+      const tabs = shadow.querySelectorAll('.dz-tab');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const target = tab.getAttribute('data-target');
+          activeTabId = target;
+          
+          // Actualizar UI
+          shadow.querySelectorAll('.dz-tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          
+          // Ocultar todo
+          shadow.querySelector('.clock-container').style.display = 'none';
+          stopClock();
+          
+          // Mostrar lo correspondiente
+          if (target === 'clock') {
+            shadow.querySelector('.clock-container').style.display = 'flex';
+            startClock(shadow.querySelector('.container'));
+          }
+          
+          // Guardar estado
+          chrome.storage.local.set({ deadZoneActiveTab: activeTabId });
+          
+          updateActiveIframe();
+          
+          // Forzar layout update (para clics de pointer-events)
+          updateLayout();
+        });
+      });
 
-      if (displayMode !== 'iframe' || !embedUrl) {
+      if (activeTabId === 'clock') {
         startClock(shadow.querySelector('.container'));
       } else {
         stopClock();
       }
+      updateActiveIframe();
     }
 
     if (host.parentNode !== document.body) {
@@ -500,7 +670,6 @@
 
   // ==========================================
   // MENÚ DE CONFIGURACIÓN A PANTALLA COMPLETA
-  // ==========================================
 
   const toggleFullscreenMenu = () => {
     if (!document.body) return;
@@ -520,9 +689,13 @@
       }
     }
 
+    loadSettingsAndShowMenu();
+  };
+
+  const loadSettingsAndShowMenu = () => {
     chrome.runtime.sendMessage({ type: "GET_TAB_STATE" }, (state) => {
-      if (state && state.shortcut) {
-        shortcutText = formatShortcut(state.shortcut);
+      if (state) {
+        isEnabled = state.isEnabled || false;
       }
       buildAndShowMenu();
     });
@@ -534,11 +707,13 @@
     menuHost = document.createElement('div');
     menuHost.id = 'screen-dead-zone-menu-host';
     menuHost.style.setProperty('position', 'fixed', 'important');
+    menuHost.style.setProperty('z-index', '2147483646', 'important');
+    
+    // Posición por defecto
     menuHost.style.setProperty('top', '0', 'important');
     menuHost.style.setProperty('left', '0', 'important');
     menuHost.style.setProperty('width', '100vw', 'important');
     menuHost.style.setProperty('height', '100vh', 'important');
-    menuHost.style.setProperty('z-index', '2147483646', 'important');
 
     menuShadow = menuHost.attachShadow({ mode: 'open' });
     menuShadow.innerHTML = `
@@ -546,13 +721,12 @@
         :host {
           all: initial;
         }
-        /* Fondo difuminado (Backdrop) que se limita al área sin zona muerta */
         .backdrop {
-          position: fixed;
+          position: absolute;
           top: 0;
           left: 0;
-          width: 100vw;
-          height: calc(100vh - var(--sdz-height, 0px)) !important;
+          width: 100%;
+          height: 100%;
           background: rgba(8, 10, 18, 0.7);
           backdrop-filter: blur(14px);
           -webkit-backdrop-filter: blur(14px);
@@ -571,17 +745,17 @@
           pointer-events: auto;
         }
         
-        /* Panel central principal adaptado al alto de la no-dead-zone con margen de 20px */
         .card {
           background: rgba(17, 24, 39, 0.85); /* Slate 900 */
           border: 1px solid rgba(255, 255, 255, 0.08);
-          border-radius: 24px;
+          border-radius: 20px;
           width: 90%;
-          max-width: 820px;
-          height: calc(100% - 40px) !important; /* Alto completo de la no-dead-zone menos 20px arriba y abajo */
+          max-width: 800px;
+          height: 90%;
+          max-height: 850px;
           box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
-          display: grid;
-          grid-template-columns: 1.1fr 1.3fr;
+          display: flex;
+          flex-direction: column;
           overflow: hidden;
           transform: scale(0.94);
           transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -590,139 +764,46 @@
           transform: scale(1);
         }
         
-        /* Columna izquierda (Explicación e Info) con soporte para scroll si es pequeña */
-        .left-column {
-          background: linear-gradient(145deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%);
-          padding: 32px;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          border-right: 1px solid rgba(255, 255, 255, 0.05);
-          box-sizing: border-box;
-          overflow-y: auto;
-          gap: 20px;
-        }
-        
-        .logo-area {
+        /* HEADER (Top) */
+        .menu-header {
+          background: linear-gradient(145deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
+          padding: 16px 24px;
           display: flex;
           align-items: center;
-          gap: 12px;
+          justify-content: space-between;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+          flex-shrink: 0;
+        }
+        .header-left {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+        }
+        .header-title-box {
+          display: flex;
+          flex-direction: column;
         }
         .logo-title {
-          font-size: 20px;
+          font-size: 18px;
           font-weight: 800;
           background: linear-gradient(135deg, #ffffff 40%, #94a3b8 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           letter-spacing: -0.02em;
         }
-        
-        .info-area {
-          margin-top: 10px;
-        }
-        .info-heading {
-          font-size: 24px;
-          font-weight: 700;
-          line-height: 1.25;
-          margin-bottom: 12px;
-          background: linear-gradient(135deg, #4ade80 0%, #16a34a 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-        }
         .info-p {
-          font-size: 13.5px;
+          font-size: 11px;
           color: #94a3b8;
-          line-height: 1.6;
-          margin-bottom: 16px;
-        }
-        
-        .shortcut-info {
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.06);
-          border-radius: 12px;
-          padding: 12px;
-          font-size: 12.5px;
-          line-height: 1.5;
-          color: #cbd5e1;
-        }
-        .shortcut-key {
-          background: rgba(255,255,255,0.08);
-          border: 1px solid rgba(255,255,255,0.12);
-          border-radius: 6px;
-          padding: 2px 6px;
-          font-family: monospace;
-          font-weight: bold;
-          color: #4ade80;
-        }
-
-        .active-window-indicator {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          background: rgba(34, 197, 94, 0.08);
-          border: 1px solid rgba(34, 197, 94, 0.15);
-          border-radius: 12px;
-          padding: 10px 14px;
-          font-size: 13px;
-          font-weight: 600;
-          color: #4ade80;
-        }
-        .indicator-dot {
-          width: 8px;
-          height: 8px;
-          background-color: #22c55e;
-          border-radius: 50%;
-          box-shadow: 0 0 8px #22c55e;
-        }
-        .active-window-indicator.disabled {
-          background: rgba(148, 163, 184, 0.08);
-          border-color: rgba(148, 163, 184, 0.15);
-          color: #94a3b8;
-        }
-        .active-window-indicator.disabled .indicator-dot {
-          background-color: #64748b;
-          box-shadow: none;
-        }
-
-        /* Columna derecha (Ajustes y Controles) */
-        .right-column {
-          padding: 32px;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          overflow-y: auto;
-          box-sizing: border-box;
-          gap: 20px;
-        }
-        
-        .right-column::-webkit-scrollbar {
-          width: 5px;
-        }
-        .right-column::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .right-column::-webkit-scrollbar-thumb {
-          background: #334155;
-          border-radius: 3px;
-        }
-
-        .panel-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-        .section-title {
-          font-size: 16px;
-          font-weight: 700;
-          color: #ffffff;
+          margin: 0;
+          margin-top: 2px;
         }
         .close-btn {
           background: rgba(255, 255, 255, 0.05);
           border: none;
           color: #94a3b8;
           border-radius: 50%;
-          width: 32px;
-          height: 32px;
+          width: 28px;
+          height: 28px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -734,11 +815,61 @@
           background: rgba(239, 68, 68, 0.15);
         }
 
+        .active-window-indicator {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(34, 197, 94, 0.08);
+          border: 1px solid rgba(34, 197, 94, 0.15);
+          border-radius: 12px;
+          padding: 6px 12px;
+          font-size: 11px;
+          font-weight: 600;
+          color: #4ade80;
+          white-space: nowrap;
+        }
+        .indicator-dot {
+          width: 6px;
+          height: 6px;
+          background-color: #22c55e;
+          border-radius: 50%;
+          box-shadow: 0 0 6px #22c55e;
+        }
+        .active-window-indicator.disabled {
+          background: rgba(148, 163, 184, 0.08);
+          border-color: rgba(148, 163, 184, 0.15);
+          color: #94a3b8;
+        }
+        .active-window-indicator.disabled .indicator-dot {
+          background-color: #64748b;
+          box-shadow: none;
+        }
+
+        /* BODY (Bottom) */
+        .menu-body {
+          padding: 16px 24px;
+          overflow-y: auto;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          box-sizing: border-box;
+        }
+        .menu-body::-webkit-scrollbar {
+          width: 5px;
+        }
+        .menu-body::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .menu-body::-webkit-scrollbar-thumb {
+          background: #334155;
+          border-radius: 3px;
+        }
+
         /* Grupos de ajuste */
         .control-group {
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 6px;
         }
         .control-header {
           display: flex;
@@ -746,22 +877,23 @@
           align-items: center;
         }
         .control-label {
-          font-size: 13px;
-          font-weight: 600;
+          font-size: 12px;
+          font-weight: 700;
           color: #e2e8f0;
         }
         .control-desc {
           font-size: 11px;
           color: #64748b;
-          line-height: 1.4;
+          line-height: 1.3;
+          margin: 0;
         }
 
         /* Switch global de activación */
         .activation-row {
           background: rgba(34, 197, 94, 0.03);
           border: 1px solid rgba(34, 197, 94, 0.12);
-          border-radius: 14px;
-          padding: 14px;
+          border-radius: 12px;
+          padding: 12px 14px;
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -769,8 +901,8 @@
         .switch {
           position: relative;
           display: inline-block;
-          width: 44px;
-          height: 22px;
+          width: 40px;
+          height: 20px;
         }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
@@ -781,22 +913,22 @@
           border: 1px solid rgba(255,255,255,0.05);
         }
         .slider:before {
-          position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 2px;
+          position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 2px;
           background-color: white;
           transition: .25s cubic-bezier(0.4, 0, 0.2, 1);
           border-radius: 50%;
           box-shadow: 0 1px 3px rgba(0,0,0,0.4);
         }
         input:checked + .slider { background-color: #22c55e; }
-        input:checked + .slider:before { transform: translateX(20px); }
+        input:checked + .slider:before { transform: translateX(18px); }
 
         /* Valor de altura display */
         .height-display {
           background: rgba(255, 255, 255, 0.05);
           border: 1px solid rgba(255, 255, 255, 0.1);
-          padding: 2px 8px;
+          padding: 2px 6px;
           border-radius: 6px;
-          font-size: 13px;
+          font-size: 11px;
           font-weight: 700;
           color: #4ade80;
         }
@@ -806,195 +938,183 @@
           -webkit-appearance: none;
           width: 100%;
           background: transparent;
-          margin-top: 4px;
+          margin: 6px 0;
         }
-        input[type=range]:focus { outline: none; }
+        input[type=range]:focus {
+          outline: none;
+        }
         input[type=range]::-webkit-slider-runnable-track {
-          width: 100%; height: 6px; cursor: pointer; background: #1e293b; border-radius: 3px;
+          width: 100%;
+          height: 6px;
+          cursor: pointer;
+          background: #334155;
+          border-radius: 3px;
+          border: 1px solid rgba(255,255,255,0.05);
         }
         input[type=range]::-webkit-slider-thumb {
-          height: 18px; width: 18px; border-radius: 50%; background: #22c55e; cursor: pointer;
-          -webkit-appearance: none; margin-top: -6px; box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+          height: 16px;
+          width: 16px;
+          border-radius: 50%;
+          background: #4ade80;
+          cursor: pointer;
+          -webkit-appearance: none;
+          margin-top: -6px;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+          transition: transform 0.1s;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+          transform: scale(1.15);
         }
         .ticks {
-          display: flex; justify-content: space-between; font-size: 9px; color: #64748b; margin-top: 3px;
-        }
-
-        /* Selector de Contenido */
-        .radio-tabs {
           display: flex;
-          background: rgba(15, 23, 42, 0.4);
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          border-radius: 10px;
-          padding: 4px;
-          gap: 4px;
-        }
-        .radio-tab {
-          flex: 1;
-          position: relative;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 8px;
-          font-size: 12px;
+          justify-content: space-between;
+          font-size: 9px;
+          color: #64748b;
           font-weight: 600;
-          color: #94a3b8;
-          cursor: pointer;
-          border-radius: 8px;
-          transition: all 0.2s;
-        }
-        .radio-tab:hover {
-          color: white;
-          background: rgba(255,255,255,0.02);
-        }
-        .radio-tab input {
-          position: absolute; opacity: 0; width: 0; height: 0;
-        }
-        .radio-tab:has(input:checked) {
-          background: #1e293b;
-          color: #4ade80;
-          border: 1px solid rgba(255,255,255,0.05);
-          box-shadow: 0 2px 6px rgba(0,0,0,0.2);
         }
 
-        /* Input de URL */
-        .input-url-wrapper {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-          margin-top: 2px;
-        }
-        .input-url {
-          background: rgba(15, 23, 42, 0.5);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          color: white;
-          border-radius: 8px;
-          padding: 8px 12px;
-          font-size: 12px;
-          outline: none;
-          width: 100%;
-          box-sizing: border-box;
-        }
-        .input-url:focus { border-color: #22c55e; }
-
-        /* Color Pickers */
+        /* Colores */
         .color-row {
           display: flex;
           gap: 12px;
         }
         .color-field {
+          flex: 1;
           display: flex;
           align-items: center;
           gap: 8px;
-          flex: 1;
-          background: rgba(15, 23, 42, 0.3);
+          background: rgba(15, 23, 42, 0.5);
           border: 1px solid rgba(255, 255, 255, 0.05);
-          padding: 6px 12px;
-          border-radius: 10px;
-          transition: all 0.2s;
+          padding: 6px;
+          border-radius: 8px;
         }
-        .color-field:hover {
-          border-color: rgba(255, 255, 255, 0.1);
-          background: rgba(255, 255, 255, 0.02);
+        .color-field input[type="color"] {
+          -webkit-appearance: none;
+          border: none;
+          width: 24px;
+          height: 24px;
+          border-radius: 4px;
+          cursor: pointer;
+          padding: 0;
+          background: none;
         }
-        input[type="color"] {
-          -webkit-appearance: none; border: none; width: 22px; height: 22px; border-radius: 6px; cursor: pointer; background: transparent;
+        .color-field input[type="color"]::-webkit-color-swatch-wrapper {
+          padding: 0;
         }
-        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-        input[type="color"]::-webkit-color-swatch {
-          border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px;
+        .color-field input[type="color"]::-webkit-color-swatch {
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: 4px;
         }
-        .color-label { font-size: 12px; font-weight: 500; color: #cbd5e1; }
+        .color-label {
+          font-size: 11px;
+          font-weight: 500;
+          color: #cbd5e1;
+        }
 
-        /* Modos de Redimensión */
+        /* Modos Layout */
         .modes-row {
-          display: flex;
-          gap: 10px;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
         }
         .mode-card {
-          flex: 1;
-          background: rgba(15, 23, 42, 0.3);
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          border-radius: 12px;
-          padding: 10px;
+          position: relative;
           cursor: pointer;
-          display: flex;
-          gap: 8px;
-          align-items: flex-start;
+          padding: 8px;
+          background: rgba(15, 23, 42, 0.5);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          border-radius: 8px;
           transition: all 0.2s;
         }
-        .mode-card:hover {
-          background: rgba(255,255,255,0.01);
-          border-color: rgba(255, 255, 255, 0.1);
-        }
         .mode-card input {
-          margin-top: 2px;
-          accent-color: #22c55e;
+          position: absolute;
+          opacity: 0;
+        }
+        .mode-card:hover {
+          background: rgba(30, 41, 59, 0.8);
+        }
+        .mode-card:has(input:checked) {
+          background: rgba(30, 41, 59, 0.9);
+          border-color: #4ade80;
         }
         .mode-card-content {
           display: flex;
           flex-direction: column;
-          gap: 2px;
+          gap: 4px;
         }
         .mode-card-title {
-          font-size: 11.5px;
-          font-weight: 700;
-          color: #cbd5e1;
-        }
-        .mode-card-desc {
-          font-size: 9px;
-          color: #64748b;
-          line-height: 1.3;
-        }
-        .mode-card:has(input:checked) {
-          border-color: rgba(34, 197, 94, 0.35);
-          background: rgba(34, 197, 94, 0.03);
+          font-size: 12px;
+          font-weight: 600;
+          color: #e2e8f0;
         }
         .mode-card:has(input:checked) .mode-card-title {
-          color: white;
+          color: #4ade80;
         }
 
-        /* Presets Section */
-        .presets-block {
-          border-top: 1px solid rgba(255, 255, 255, 0.06);
-          padding-top: 16px;
+        /* Grid horizontal/vertical responsivo según proporción de pantalla */
+        .settings-row {
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 16px;
         }
-        .preset-form {
-          display: flex;
-          gap: 6px;
+
+        @media (min-aspect-ratio: 1/1) {
+          .settings-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+          }
         }
-        .preset-input {
-          flex: 1;
+
+        .section-separator {
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+          margin: 6px 0;
+          flex-shrink: 0;
+        }
+
+        /* Inputs de texto / URLs */
+        .input-url, .preset-input {
           background: rgba(15, 23, 42, 0.5);
           border: 1px solid rgba(255, 255, 255, 0.1);
           color: white;
+          padding: 6px 10px;
           border-radius: 8px;
-          padding: 6px 12px;
-          font-size: 12px;
+          font-size: 11px;
+          font-family: inherit;
           outline: none;
+          transition: border-color 0.2s;
         }
-        .preset-input:focus { border-color: #22c55e; }
+        .input-url:focus, .preset-input:focus {
+          border-color: #4ade80;
+        }
+        
+        .preset-form {
+          display: flex;
+          gap: 8px;
+          margin-bottom: 8px;
+        }
+        .preset-input {
+          flex: 1;
+        }
+
         .preset-btn {
-          background: #16a34a;
-          border: none;
-          color: white;
+          background: rgba(34, 197, 94, 0.15);
+          border: 1px solid rgba(34, 197, 94, 0.2);
+          color: #4ade80;
           border-radius: 8px;
           padding: 6px 14px;
-          font-size: 12px;
+          font-size: 11px;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.2s;
         }
-        .preset-btn:hover { background: #15803d; }
+        .preset-btn:hover { background: #15803d; color: white; }
         
         .presets-list {
           display: flex;
           flex-direction: column;
           gap: 6px;
-          max-height: 110px;
+          max-height: 90px;
           overflow-y: auto;
           padding-right: 2px;
         }
@@ -1030,19 +1150,13 @@
           color: #4ade80;
           border: 1px solid rgba(34, 197, 94, 0.2);
         }
-        .load-action:hover {
-          background: #22c55e;
-          color: white;
-        }
+        .load-action:hover { background: #22c55e; color: white; }
         .delete-action {
           background: rgba(239, 68, 68, 0.1);
           color: #f87171;
           border: 1px solid rgba(239, 68, 68, 0.15);
         }
-        .delete-action:hover {
-          background: #ef4444;
-          color: white;
-        }
+        .delete-action:hover { background: #ef4444; color: white; }
         .empty-presets {
           font-size: 11px;
           color: #64748b;
@@ -1050,14 +1164,46 @@
           padding: 8px 0;
           font-style: italic;
         }
+
+        /* GitHub Link */
+        .presets-block {
+          background: rgba(15, 23, 42, 0.4);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          border-radius: 8px;
+          padding: 12px;
+        }
+        .github-link {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: #94a3b8;
+          text-decoration: none;
+          font-size: 11px;
+          font-weight: 500;
+          transition: color 0.2s ease, transform 0.2s ease;
+          justify-content: center;
+        }
+        .github-link:hover {
+          color: #ffffff;
+          transform: scale(1.02);
+        }
+        .shortcut-key {
+          background: rgba(255,255,255,0.08);
+          border: 1px solid rgba(255,255,255,0.12);
+          border-radius: 6px;
+          padding: 2px 6px;
+          font-family: monospace;
+          font-weight: bold;
+          color: #4ade80;
+        }
       </style>
       
       <div class="backdrop">
         <div class="card">
-          <!-- Columna Izquierda (Logo e Info) -->
-          <div class="left-column">
-            <div class="logo-area">
-              <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="28" height="28">
+          <!-- CABECERA -->
+          <div class="menu-header">
+            <div class="header-left">
+              <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="24" height="24">
                 <path d="M 44 110 L 84 110 L 80 96 L 48 96 Z" fill="#475569" />
                 <rect x="52" y="94" width="24" height="12" fill="#64748b" rx="2" />
                 <rect x="14" y="14" width="100" height="80" rx="8" fill="#334155" />
@@ -1065,40 +1211,34 @@
                 <rect x="20" y="64" width="88" height="24" rx="2" fill="#22c55e" opacity="0.9" />
                 <text x="64" y="79" font-family="sans-serif" font-size="8" font-weight="bold" fill="#ffffff" text-anchor="middle">DZ</text>
               </svg>
-              <span class="logo-title">ScreenDeadZone</span>
-            </div>
-            
-            <div class="info-area">
-              <h1 class="info-heading">Control de Zona Muerta</h1>
-              <p class="info-p">Determina una zona de tu pantalla en la que no se muestre el navegador.</p>
-              <div class="shortcut-info">
-                Puedes pulsar <span class="shortcut-key">${shortcutText}</span> o hacer clic en el icono para abrir/cerrar este panel.
+              <div class="header-title-box">
+                <span class="logo-title">ScreenDeadZone</span>
+                <p class="info-p">${chrome.i18n.getMessage("contentDesc") || "Determina una zona de tu pantalla en la que no se muestre el navegador."}</p>
               </div>
             </div>
             
-            <div class="active-window-indicator ${isEnabled ? '' : 'disabled'}">
-              <div class="indicator-dot"></div>
-              <span class="indicator-text">${isEnabled ? 'Zona Muerta Activa en esta Ventana' : 'Zona Muerta Desactivada'}</span>
-            </div>
-          </div>
-          
-          <!-- Columna Derecha (Ajustes) -->
-          <div class="right-column">
-            <div class="panel-header">
-              <h2 class="section-title">Ajustes</h2>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div class="active-window-indicator ${isEnabled ? '' : 'disabled'}">
+                <div class="indicator-dot"></div>
+                <span class="indicator-text">${isEnabled ? chrome.i18n.getMessage("contentActiveIndicator") : chrome.i18n.getMessage("contentInactiveIndicator")}</span>
+              </div>
               <button class="close-btn" title="Cerrar Ajustes">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
               </button>
             </div>
+          </div>
+          
+          <!-- CUERPO DE AJUSTES -->
+          <div class="menu-body">
 
             <!-- Switch Activación -->
             <div class="activation-row">
               <div>
-                <span class="control-label">Activar Zona Muerta</span>
-                <p class="control-desc">Aplica la barra a toda la ventana actual</p>
+                <span class="control-label" style="font-size: 14px;">${chrome.i18n.getMessage("contentEnableTitle")}</span>
+                <p class="control-desc">${chrome.i18n.getMessage("contentEnableDesc")}</p>
               </div>
               <label class="switch">
                 <input type="checkbox" id="menu-enable-toggle" ${isEnabled ? 'checked' : ''}>
@@ -1106,85 +1246,144 @@
               </label>
             </div>
 
+            <div class="section-separator"></div>
+
+            <!-- Posición de Anclaje -->
+            <div class="control-group">
+              <label class="control-label">${chrome.i18n.getMessage("contentAnchorTitle")}</label>
+              <div class="modes-row" style="grid-template-columns: 1fr 1fr 1fr 1fr;">
+                <label class="mode-card" style="padding: 8px;">
+                  <input type="radio" name="menu-anchor-pos" value="top" ${anchorPos === 'top' ? 'checked' : ''}>
+                  <div class="mode-card-content" style="text-align: center;">
+                    <span class="mode-card-title">⬆️ ${chrome.i18n.getMessage("contentAnchorTop")}</span>
+                  </div>
+                </label>
+                <label class="mode-card" style="padding: 8px;">
+                  <input type="radio" name="menu-anchor-pos" value="bottom" ${anchorPos === 'bottom' ? 'checked' : ''}>
+                  <div class="mode-card-content" style="text-align: center;">
+                    <span class="mode-card-title">⬇️ ${chrome.i18n.getMessage("contentAnchorBottom")}</span>
+                  </div>
+                </label>
+                <label class="mode-card" style="padding: 8px;">
+                  <input type="radio" name="menu-anchor-pos" value="left" ${anchorPos === 'left' ? 'checked' : ''}>
+                  <div class="mode-card-content" style="text-align: center;">
+                    <span class="mode-card-title">⬅️ ${chrome.i18n.getMessage("contentAnchorLeft")}</span>
+                  </div>
+                </label>
+                <label class="mode-card" style="padding: 8px;">
+                  <input type="radio" name="menu-anchor-pos" value="right" ${anchorPos === 'right' ? 'checked' : ''}>
+                  <div class="mode-card-content" style="text-align: center;">
+                    <span class="mode-card-title">➡️ ${chrome.i18n.getMessage("contentAnchorRight")}</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div class="section-separator"></div>
+
             <!-- Control Altura -->
             <div class="control-group">
               <div class="control-header">
-                <label class="control-label">Altura de la barra</label>
+                <label class="control-label">${chrome.i18n.getMessage("contentBarHeight")}</label>
                 <span class="height-display"><span id="menu-height-val">${currentHeight}</span>%</span>
               </div>
-              <input type="range" id="menu-height-range" min="0" max="50" value="${currentHeight}" step="1">
+              <input type="range" id="menu-height-range" min="0" max="70" value="${currentHeight}" step="1">
               <div class="ticks">
                 <span>0%</span>
-                <span>25%</span>
-                <span>50%</span>
+                <span>35%</span>
+                <span>70%</span>
               </div>
             </div>
 
-            <!-- Personalización de Colores -->
-            <div class="control-group">
-              <label class="control-label">Personalización de Colores</label>
-              <div class="color-row">
-                <div class="color-field">
-                  <input type="color" id="menu-bg-color" value="${bgColor}">
-                  <span class="color-label">Fondo</span>
-                </div>
-                <div class="color-field">
-                  <input type="color" id="menu-fg-color" value="${fgColor}">
-                  <span class="color-label">Texto</span>
-                </div>
-              </div>
-            </div>
+            <div class="section-separator"></div>
 
-            <!-- Contenido de Zona Muerta -->
-            <div class="control-group">
-              <label class="control-label">Contenido de la Barra</label>
-              <div class="radio-tabs">
-                <label class="radio-tab">
-                  <input type="radio" name="menu-display-mode" value="clock" ${displayMode === 'clock' ? 'checked' : ''}>
-                  <span>Reloj y Fecha</span>
-                </label>
-                <label class="radio-tab">
-                  <input type="radio" name="menu-display-mode" value="iframe" ${displayMode === 'iframe' ? 'checked' : ''}>
-                  <span>Web Embebida (Iframe)</span>
-                </label>
-              </div>
-              <div class="input-url-wrapper" id="menu-url-wrapper" style="display: ${displayMode === 'iframe' ? 'flex' : 'none'};">
-                <input type="url" id="menu-embed-url" class="input-url" placeholder="https://ejemplo.com/widget-reloj" value="${embedUrl}">
-                <p class="control-desc">Webs protegidas (como YouTube) no admiten ser embebidas por seguridad.</p>
-              </div>
-            </div>
-
-            <!-- Modo Redimensionamiento -->
-            <div class="control-group">
-              <label class="control-label">Modo de Redimensionamiento</label>
-              <div class="modes-row">
-                <label class="mode-card">
-                  <input type="radio" name="menu-layout-mode" value="resize" ${layoutMode === 'resize' ? 'checked' : ''}>
-                  <div class="mode-card-content">
-                    <span class="mode-card-title">Redimensionar</span>
-                    <span class="mode-card-desc">Frena el scroll de la web arriba de la barra.</span>
+            <div class="settings-row">
+              <!-- Personalización de Colores -->
+              <div class="control-group">
+                <label class="control-label">${chrome.i18n.getMessage("contentColorTitle")}</label>
+                <div class="color-row">
+                  <div class="color-field">
+                    <input type="color" id="menu-bg-color" value="${bgColor}">
+                    <span class="color-label">${chrome.i18n.getMessage("contentBgColor")}</span>
                   </div>
-                </label>
-                <label class="mode-card">
-                  <input type="radio" name="menu-layout-mode" value="spacer" ${layoutMode === 'spacer' ? 'checked' : ''}>
-                  <div class="mode-card-content">
-                    <span class="mode-card-title">Margen Inferior</span>
-                    <span class="mode-card-desc">Añade relleno al final de la página.</span>
+                  <div class="color-field">
+                    <input type="color" id="menu-fg-color" value="${fgColor}">
+                    <span class="color-label">${chrome.i18n.getMessage("contentFgColor")}</span>
                   </div>
-                </label>
+                </div>
+              </div>
+
+              <!-- Modo Redimensionamiento -->
+              <div class="control-group">
+                <label class="control-label">${chrome.i18n.getMessage("contentLayoutMode")}</label>
+                <div class="modes-row">
+                  <label class="mode-card">
+                    <input type="radio" name="menu-layout-mode" value="resize" ${layoutMode === 'resize' ? 'checked' : ''}>
+                    <div class="mode-card-content">
+                      <span class="mode-card-title">${chrome.i18n.getMessage("contentResize")}</span>
+                      <span style="font-size: 10px; color: #4ade80; opacity: 0.9; margin-top: -2px;">${chrome.i18n.getMessage("contentRecommended")}</span>
+                    </div>
+                  </label>
+                  <label class="mode-card">
+                    <input type="radio" name="menu-layout-mode" value="spacer" ${layoutMode === 'spacer' ? 'checked' : ''}>
+                    <div class="mode-card-content">
+                      <span class="mode-card-title">${chrome.i18n.getMessage("contentSpacer")}</span>
+                    </div>
+                  </label>
+                </div>
               </div>
             </div>
 
-            <!-- Presets -->
-            <div class="presets-block">
-              <label class="control-label">Sets de Ajustes (Presets)</label>
-              <div class="preset-form">
-                <input type="text" id="menu-preset-name" class="preset-input" placeholder="Nombre (ej. Noche, Trabajo)" maxlength="20">
-                <button id="menu-save-preset-btn" class="preset-btn">Guardar</button>
+            <div class="section-separator"></div>
+
+            <div class="settings-row">
+              <!-- Webs Guardadas (Pestañas) -->
+              <div class="control-group">
+                <label class="control-label">${chrome.i18n.getMessage("contentTabManager")}</label>
+                <div class="input-url-wrapper" id="menu-url-wrapper" style="display: flex; flex-direction: column; gap: 8px;">
+                  <div style="display: flex; gap: 8px; width: 100%;">
+                    <input type="url" id="menu-embed-url" class="input-url" style="flex: 1;" placeholder="https://ejemplo.com/camara">
+                    <button id="menu-add-url-btn" class="preset-btn">${chrome.i18n.getMessage("contentBtnAdd")}</button>
+                  </div>
+                  <p class="control-desc">${chrome.i18n.getMessage("contentTabDesc")}</p>
+                </div>
+                <div class="presets-list" id="menu-urls-list">
+                  <!-- Renderizados por JS -->
+                </div>
               </div>
-              <div class="presets-list" id="menu-presets-list">
-                <!-- Renderizados por JS -->
+
+              <!-- Presets -->
+              <div class="presets-block" style="margin: 0; padding: 0; background: none; border: none;">
+                <label class="control-label">${chrome.i18n.getMessage("contentPresetsTitle")}</label>
+                <div class="preset-form">
+                  <input type="text" id="menu-preset-name" class="preset-input" placeholder="${chrome.i18n.getMessage("contentPresetInput")}" maxlength="20">
+                  <button id="menu-save-preset-btn" class="preset-btn">${chrome.i18n.getMessage("contentPresetSave")}</button>
+                </div>
+                <div class="presets-list" id="menu-presets-list">
+                  <!-- Renderizados por JS -->
+                </div>
               </div>
+            </div>
+            
+            <div class="section-separator"></div>
+
+            <div class="warning-block" style="display: flex; gap: 10px; background: rgba(239, 68, 68, 0.04); border: 1px solid rgba(239, 68, 68, 0.15); border-radius: 10px; padding: 12px; font-size: 11px; line-height: 1.5; color: #f87171; align-items: flex-start; box-sizing: border-box; flex-shrink: 0;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+              <span>${chrome.i18n.getMessage("contentWarningDesc")}</span>
+            </div>
+
+            <div style="margin-top: 8px;">
+              <!-- Enlace a GitHub -->
+              <a href="https://github.com/soyalejandroterriza/ScreenDeadZone" target="_blank" class="github-link" title="Ver código fuente en GitHub">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                </svg>
+                GitHub
+              </a>
             </div>
 
           </div>
@@ -1194,20 +1393,20 @@
 
     setupMenuListeners();
 
-    // Agregar al DOM y activar transiciones
     if (menuHost.parentNode !== document.body) {
       document.body.appendChild(menuHost);
     }
     
-    // Forzar reflow y activar clases
+    updateMenuBounds();
+
     setTimeout(() => {
       const backdrop = menuShadow.querySelector('.backdrop');
       if (backdrop) backdrop.classList.add('active');
     }, 10);
 
     renderMenuPresets();
+    renderMenuUrls();
   };
-
   // Configurar listeners del menú de pantalla completa
   const setupMenuListeners = () => {
     if (!menuShadow) return;
@@ -1215,11 +1414,19 @@
     const backdrop = menuShadow.querySelector('.backdrop');
     const closeBtn = menuShadow.querySelector('.close-btn');
     const enableToggle = menuShadow.querySelector('#menu-enable-toggle');
+    const anchorRadios = menuShadow.querySelectorAll('input[name="menu-anchor-pos"]');
+    anchorRadios.forEach(r => r.addEventListener('change', (e) => {
+      anchorPos = e.target.value;
+      updateLayout();
+      updateMenuBounds();
+      chrome.storage.local.set({ deadZoneAnchor: anchorPos });
+    }));
+
     const heightRange = menuShadow.querySelector('#menu-height-range');
     const heightValSpan = menuShadow.querySelector('#menu-height-val');
     const bgColorInp = menuShadow.querySelector('#menu-bg-color');
     const fgColorInp = menuShadow.querySelector('#menu-fg-color');
-    const radioDisplayModes = menuShadow.querySelectorAll('input[name="menu-display-mode"]');
+    // const radioDisplayModes = menuShadow.querySelectorAll('input[name="menu-display-mode"]');
     const urlWrapper = menuShadow.querySelector('#menu-url-wrapper');
     const urlInp = menuShadow.querySelector('#menu-embed-url');
     const radioLayoutModes = menuShadow.querySelectorAll('input[name="menu-layout-mode"]');
@@ -1257,11 +1464,14 @@
       }
     });
 
-    // Toggle de activación global
     enableToggle.addEventListener('change', () => {
+      isEnabled = enableToggle.checked;
+      updateLayout();
+      updateMenuBounds();
+
       chrome.runtime.sendMessage({
         type: "SET_TAB_STATE",
-        windowId: true, // Esto le dice al background que resuelva la ventana activa del emisor
+        windowId: true,
         isEnabled: enableToggle.checked
       });
       
@@ -1269,10 +1479,10 @@
       const indicatorText = menuShadow.querySelector('.indicator-text');
       if (enableToggle.checked) {
         indicator.classList.remove('disabled');
-        indicatorText.textContent = 'Zona Muerta Activa en esta Ventana';
+        indicatorText.textContent = chrome.i18n.getMessage("contentActiveIndicator");
       } else {
         indicator.classList.add('disabled');
-        indicatorText.textContent = 'Zona Muerta Desactivada';
+        indicatorText.textContent = chrome.i18n.getMessage("contentInactiveIndicator");
       }
     });
 
@@ -1291,20 +1501,23 @@
       chrome.storage.local.set({ deadZoneFgColor: e.target.value });
     });
 
-    // Modos de visualización
-    radioDisplayModes.forEach(radio => {
-      radio.addEventListener('change', (e) => {
-        if (e.target.checked) {
-          const val = e.target.value;
-          urlWrapper.style.display = val === 'iframe' ? 'flex' : 'none';
-          chrome.storage.local.set({ deadZoneDisplayMode: val });
-        }
+    // URLs / Pestañas
+    const addUrlBtn = menuShadow.querySelector('#menu-add-url-btn');
+    addUrlBtn.addEventListener('click', () => {
+      const url = urlInp.value.trim();
+      if (!url) return;
+      try {
+        new URL(url); // Validar formato
+      } catch (e) {
+        alert(chrome.i18n.getMessage("contentUrlInvalid"));
+        return;
+      }
+      embedUrls.push({ url, title: new URL(url).hostname });
+      chrome.storage.local.set({ deadZoneEmbedUrls: embedUrls }, () => {
+        urlInp.value = '';
+        renderMenuUrls();
+        updateLayout(); // Refresh host tabs
       });
-    });
-
-    // URL embebida
-    urlInp.addEventListener('change', (e) => {
-      chrome.storage.local.set({ deadZoneEmbedUrl: e.target.value.trim() });
     });
 
     // Modos de redimensionamiento
@@ -1331,8 +1544,7 @@
         bgColor: bgColorInp.value,
         fgColor: fgColorInp.value,
         mode: menuShadow.querySelector('input[name="menu-layout-mode"]:checked').value,
-        displayMode: menuShadow.querySelector('input[name="menu-display-mode"]:checked').value,
-        embedUrl: urlInp.value.trim()
+        embedUrls: JSON.parse(JSON.stringify(embedUrls))
       };
 
       if (duplicateIndex >= 0) {
@@ -1349,6 +1561,51 @@
         presetNameInp.value = '';
         renderMenuPresets();
       });
+    });
+  };
+
+  // Renderizar la lista de URLs
+  const renderMenuUrls = () => {
+    if (!menuShadow) return;
+    const listContainer = menuShadow.querySelector('#menu-urls-list');
+    listContainer.innerHTML = '';
+    
+    if (embedUrls.length === 0) {
+      listContainer.innerHTML = `<div class="empty-presets">${chrome.i18n.getMessage("contentEmptyTabs")}</div>`;
+      return;
+    }
+
+    embedUrls.forEach((obj, index) => {
+      const item = document.createElement('div');
+      item.className = 'preset-item';
+      item.innerHTML = `
+        <span class="preset-name">${obj.title || obj.url}</span>
+        <div class="preset-item-actions">
+          <button class="action-btn delete-action" data-index="${index}">${chrome.i18n.getMessage("contentBtnDelete")}</button>
+        </div>
+      `;
+
+      item.querySelector('.delete-action').addEventListener('click', () => {
+        if (confirm(chrome.i18n.getMessage("contentConfirmDelete").replace('[TITLE]', obj.title || obj.url))) {
+          embedUrls.splice(index, 1);
+          if (activeTabId === 'url-' + index) {
+             activeTabId = 'clock';
+             chrome.storage.local.set({ deadZoneActiveTab: 'clock' });
+          } else if (activeTabId.startsWith('url-')) {
+             const currentIdx = parseInt(activeTabId.split('-')[1]);
+             if (currentIdx > index) {
+                activeTabId = 'url-' + (currentIdx - 1);
+                chrome.storage.local.set({ deadZoneActiveTab: activeTabId });
+             }
+          }
+          chrome.storage.local.set({ deadZoneEmbedUrls: embedUrls }, () => {
+            renderMenuUrls();
+            updateLayout();
+          });
+        }
+      });
+
+      listContainer.appendChild(item);
     });
   };
 
@@ -1397,8 +1654,7 @@
       deadZoneBgColor: preset.bgColor,
       deadZoneFgColor: preset.fgColor,
       deadZoneMode: preset.mode,
-      deadZoneDisplayMode: preset.displayMode || 'clock',
-      deadZoneEmbedUrl: preset.embedUrl || ''
+      deadZoneEmbedUrls: preset.embedUrls || []
     }, () => {
       // Sincronizar los inputs visuales del menú si está abierto
       if (menuShadow) {
@@ -1410,12 +1666,8 @@
         const rLayout = menuShadow.querySelector(`input[name="menu-layout-mode"][value="${preset.mode}"]`);
         if (rLayout) rLayout.checked = true;
 
-        const dMode = preset.displayMode || 'clock';
-        const rDisplay = menuShadow.querySelector(`input[name="menu-display-mode"][value="${dMode}"]`);
-        if (rDisplay) rDisplay.checked = true;
-
-        menuShadow.querySelector('#menu-url-wrapper').style.display = dMode === 'iframe' ? 'flex' : 'none';
-        menuShadow.querySelector('#menu-embed-url').value = preset.embedUrl || '';
+        embedUrls = preset.embedUrls || [];
+        renderMenuUrls();
       }
     });
   };
@@ -1426,12 +1678,38 @@
     if (changes.deadZoneMode) layoutMode = changes.deadZoneMode.newValue;
     if (changes.deadZoneBgColor) bgColor = changes.deadZoneBgColor.newValue;
     if (changes.deadZoneFgColor) fgColor = changes.deadZoneFgColor.newValue;
-    if (changes.deadZoneDisplayMode) displayMode = changes.deadZoneDisplayMode.newValue;
-    if (changes.deadZoneEmbedUrl) embedUrl = changes.deadZoneEmbedUrl.newValue;
+    if (changes.deadZoneActiveTab) activeTabId = changes.deadZoneActiveTab.newValue;
+    if (changes.deadZoneEmbedUrls) embedUrls = changes.deadZoneEmbedUrls.newValue;
     if (changes.deadZonePresets) savedPresets = changes.deadZonePresets.newValue || [];
+    if (changes.deadZoneAnchor) anchorPos = changes.deadZoneAnchor.newValue;
+    if (changes.deadZoneActiveTab) {
+      activeTabId = changes.deadZoneActiveTab.newValue;
+      if (shadow) {
+        shadow.querySelectorAll('.dz-tab').forEach(t => {
+          if (t.getAttribute('data-target') === activeTabId) {
+            t.classList.add('active');
+          } else {
+            t.classList.remove('active');
+          }
+        });
+        const clockContainer = shadow.querySelector('.clock-container');
+        if (activeTabId === 'clock') {
+          if (clockContainer) clockContainer.style.display = 'flex';
+          startClock(shadow.querySelector('.container'));
+        } else {
+          if (clockContainer) clockContainer.style.display = 'none';
+          stopClock();
+        }
+        updateActiveIframe();
+      }
+    }
 
     // Sincronizar menú si estuviera abierto
     if (menuShadow) {
+      if (changes.deadZoneAnchor) {
+        const rAnchor = menuShadow.querySelector(`input[name="menu-anchor-pos"][value="${anchorPos}"]`);
+        if (rAnchor) rAnchor.checked = true;
+      }
       if (changes.deadZoneHeight) {
         menuShadow.querySelector('#menu-height-range').value = currentHeight;
         menuShadow.querySelector('#menu-height-val').textContent = currentHeight;
@@ -1443,13 +1721,8 @@
         const r = menuShadow.querySelector(`input[name="menu-layout-mode"][value="${layoutMode}"]`);
         if (r) r.checked = true;
       }
-      if (changes.deadZoneDisplayMode) {
-        const r = menuShadow.querySelector(`input[name="menu-display-mode"][value="${displayMode}"]`);
-        if (r) r.checked = true;
-        menuShadow.querySelector('#menu-url-wrapper').style.display = displayMode === 'iframe' ? 'flex' : 'none';
-      }
-      if (changes.deadZoneEmbedUrl) {
-        menuShadow.querySelector('#menu-embed-url').value = embedUrl;
+      if (changes.deadZoneEmbedUrls) {
+        renderMenuUrls();
       }
       if (changes.deadZonePresets) {
         renderMenuPresets();
@@ -1464,16 +1737,26 @@
       'deadZoneMode', 
       'deadZoneBgColor', 
       'deadZoneFgColor',
-      'deadZoneDisplayMode',
+      'deadZoneActiveTab',
+      'deadZoneEmbedUrls',
       'deadZoneEmbedUrl',
-      'deadZonePresets'
+      'deadZonePresets',
+      'deadZoneAnchor'
     ], (res) => {
       if (res.deadZoneHeight !== undefined) currentHeight = res.deadZoneHeight;
       if (res.deadZoneMode !== undefined) layoutMode = res.deadZoneMode;
       if (res.deadZoneBgColor !== undefined) bgColor = res.deadZoneBgColor;
       if (res.deadZoneFgColor !== undefined) fgColor = res.deadZoneFgColor;
-      if (res.deadZoneDisplayMode !== undefined) displayMode = res.deadZoneDisplayMode;
-      if (res.deadZoneEmbedUrl !== undefined) embedUrl = res.deadZoneEmbedUrl;
+      if (res.deadZoneActiveTab !== undefined) activeTabId = res.deadZoneActiveTab;
+      if (res.deadZoneAnchor !== undefined) anchorPos = res.deadZoneAnchor;
+      
+      // Migration from old deadZoneEmbedUrl
+      if (res.deadZoneEmbedUrls !== undefined) {
+        embedUrls = res.deadZoneEmbedUrls;
+      } else if (res.deadZoneEmbedUrl) {
+        embedUrls = [{ url: res.deadZoneEmbedUrl, title: new URL(res.deadZoneEmbedUrl).hostname }];
+        chrome.storage.local.set({ deadZoneEmbedUrls: embedUrls, deadZoneActiveTab: res.deadZoneDisplayMode === 'iframe' ? 'url-0' : 'clock' });
+      }
       if (res.deadZonePresets !== undefined) savedPresets = res.deadZonePresets;
 
       // Consultar el estado activo específico de esta ventana al background script
@@ -1512,13 +1795,14 @@
       
       if (changes.deadZoneHeight || changes.deadZoneMode || changes.deadZoneBgColor || 
           changes.deadZoneFgColor || changes.deadZoneDisplayMode || changes.deadZoneEmbedUrl || 
-          changes.deadZonePresets) {
+          changes.deadZonePresets || changes.deadZoneAnchor || changes.deadZoneActiveTab) {
         syncSettingsOnStorageChange(changes);
         changed = true;
       }
 
       if (changed) {
         updateLayout();
+        updateMenuBounds();
       }
     }
   });
@@ -1545,6 +1829,7 @@
       }
       
       updateLayout();
+      updateMenuBounds();
     }
     
     else if (message.type === "OPEN_FULLSCREEN_MENU") {
@@ -1599,7 +1884,7 @@
       if (isEnabled && currentHeight > 0) {
         document.documentElement.classList.add('sdz-active', `sdz-mode-${layoutMode}`);
         document.body?.classList.add('sdz-active', `sdz-mode-${layoutMode}`);
-        if (shadow && (displayMode !== 'iframe' || !embedUrl) && !isMinimized) startClock(shadow.querySelector('.container'));
+        if (shadow && activeTabId === 'clock' && !isMinimized) startClock(shadow.querySelector('.container'));
       }
     }
   });

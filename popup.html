@@ -85,7 +85,7 @@
     <!-- Spinner de carga por defecto -->
     <div id="loader" class="container">
       <div class="spinner"></div>
-      <span class="loading-text">Abriendo panel de control...</span>
+      <span class="loading-text" data-i18n="popupLoading">Abriendo panel de control...</span>
     </div>
 
     <!-- Mensaje de advertencia si es una pestaña del sistema -->
@@ -95,11 +95,11 @@
         <line x1="12" y1="9" x2="12" y2="13"></line>
         <line x1="12" y1="17" x2="12.01" y2="17"></line>
       </svg>
-      <h3 class="warning-title">No se puede abrir aquí</h3>
-      <p class="warning-desc">Por seguridad, Chrome bloquea extensiones en páginas del sistema (como la pestaña de extensiones, historial o la Web Store).</p>
-      <p class="warning-desc">Abre cualquier sitio web (como Google o tu página de pruebas) y haz clic de nuevo.</p>
+      <h3 class="warning-title" data-i18n="popupWarningTitle">No se puede abrir aquí</h3>
+      <p class="warning-desc" data-i18n="popupWarningDesc1">Por seguridad, Chrome bloquea extensiones en páginas del sistema (como la pestaña de extensiones, historial o la Web Store).</p>
+      <p class="warning-desc" data-i18n="popupWarningDesc2">Abre cualquier sitio web (como Google o tu página de pruebas) y haz clic de nuevo.</p>
       <div class="shortcut-badge">
-        Atajo: <span class="badge-key">Cmd Derecho + Shift + 0</span>
+        <span data-i18n="popupShortcut">Atajo:</span> <span class="badge-key" id="shortcut-key">Cmd Derecho + Shift + 0</span>
       </div>
     </div>
   </div>

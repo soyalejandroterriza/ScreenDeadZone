@@ -1,0 +1,122 @@
+{
+  "extName": {
+    "message": "Screen Dead Zone"
+  },
+  "extDesc": {
+    "message": "ブラウザが表示されない画面上の領域を決定します。"
+  },
+  "cmdToggleDesc": {
+    "message": "現在のウィンドウでデッドゾーンを切り替える"
+  },
+  "popupLoading": {
+    "message": "コントロールパネルを開いています..."
+  },
+  "popupWarningTitle": {
+    "message": "ここでは開けません"
+  },
+  "popupWarningDesc1": {
+    "message": "セキュリティ上の理由から、Chrome はシステムページ（拡張機能タブ、履歴、ウェブストアなど）での拡張機能をブロックします。"
+  },
+  "popupWarningDesc2": {
+    "message": "任意のウェブサイト（Google やテストページなど）を開いて、もう一度クリックしてください。"
+  },
+  "popupShortcut": {
+    "message": "ショートカット："
+  },
+  "contentSettings": {
+    "message": "設定"
+  },
+  "contentLayoutMode": {
+    "message": "レイアウトモード"
+  },
+  "contentResize": {
+    "message": "サイズ変更 (コンテンツを移動)"
+  },
+  "contentRecommended": {
+    "message": "(推奨)"
+  },
+  "contentSpacer": {
+    "message": "スペーサー (コンテンツを覆う)"
+  },
+  "contentBarHeight": {
+    "message": "バーのサイズ"
+  },
+  "contentBgColor": {
+    "message": "背景色"
+  },
+  "contentFgColor": {
+    "message": "時計の色"
+  },
+  "contentTabManager": {
+    "message": "バーのタブ"
+  },
+  "contentTabDesc": {
+    "message": "ウェブサイトを追加して、バーのタブとして切り替えます。時計はデフォルトで常に利用可能です。"
+  },
+  "contentBtnAdd": {
+    "message": "追加"
+  },
+  "contentBtnDelete": {
+    "message": "削除"
+  },
+  "contentConfirmDelete": {
+    "message": "タブ \"[TITLE]\" を削除しますか？"
+  },
+  "contentEmptyTabs": {
+    "message": "保存されたタブはありません。"
+  },
+  "contentBtnHide": {
+    "message": "隠す"
+  },
+  "contentBtnShow": {
+    "message": "表示"
+  },
+  "contentTabClock": {
+    "message": "時計"
+  },
+  "contentUrlInvalid": {
+    "message": "無効な URL。"
+  },
+  "contentEnableTitle": {
+    "message": "デッドゾーンを有効にする"
+  },
+  "contentEnableDesc": {
+    "message": "バーを現在のウィンドウ全体に適用します"
+  },
+  "contentColorTitle": {
+    "message": "色のカスタマイズ"
+  },
+  "contentPresetsTitle": {
+    "message": "設定セット（プリセット）"
+  },
+  "contentWarningDesc": {
+    "message": "iframe と時計タブは ScreenDeadZone を含むすべてのタブ間で共有されないため、各タブが独自の時計と iframe を実行し、メモリとプロセッサの消費量が増加します。タブが多すぎるウィンドウでは ScreenDeadZone を有効にしないことを検討してください。"
+  },
+  "contentPresetSave": {
+    "message": "保存"
+  },
+  "contentPresetInput": {
+    "message": "名前（例：夜、仕事）"
+  },
+  "contentActiveIndicator": {
+    "message": "このウィンドウでデッドゾーンがアクティブです"
+  },
+  "contentInactiveIndicator": {
+    "message": "デッドゾーンは無効です"
+  },
+  "contentAnchorTitle": {
+    "message": "バーの位置"
+  },
+  "contentAnchorTop": {
+    "message": "上"
+  },
+  "contentAnchorBottom": {
+    "message": "下"
+  },
+  "contentAnchorLeft": {
+    "message": "左"
+  },
+  "contentAnchorRight": {
+    "message": "右"
+  }
+}

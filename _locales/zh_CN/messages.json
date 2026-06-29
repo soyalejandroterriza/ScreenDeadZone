@@ -1,0 +1,122 @@
+{
+  "extName": {
+    "message": "Screen Dead Zone"
+  },
+  "extDesc": {
+    "message": "在屏幕上确定一个不显示浏览器的区域。"
+  },
+  "cmdToggleDesc": {
+    "message": "在当前窗口切换盲区"
+  },
+  "popupLoading": {
+    "message": "正在打开控制面板..."
+  },
+  "popupWarningTitle": {
+    "message": "无法在此处打开"
+  },
+  "popupWarningDesc1": {
+    "message": "为了安全起见，Chrome 会在系统页面（如扩展程序选项卡、历史记录或网络商店）上阻止扩展程序。"
+  },
+  "popupWarningDesc2": {
+    "message": "打开任何网站（如 Google 或您的测试页面）并再次单击。"
+  },
+  "popupShortcut": {
+    "message": "快捷键："
+  },
+  "contentSettings": {
+    "message": "设置"
+  },
+  "contentLayoutMode": {
+    "message": "布局模式"
+  },
+  "contentResize": {
+    "message": "调整大小 (移动内容)"
+  },
+  "contentRecommended": {
+    "message": "(推荐)"
+  },
+  "contentSpacer": {
+    "message": "垫片 (覆盖内容)"
+  },
+  "contentBarHeight": {
+    "message": "栏大小"
+  },
+  "contentBgColor": {
+    "message": "背景颜色"
+  },
+  "contentFgColor": {
+    "message": "时钟颜色"
+  },
+  "contentTabManager": {
+    "message": "栏选项卡"
+  },
+  "contentTabDesc": {
+    "message": "添加网站以将它们作为栏中的选项卡切换。时钟将默认可用。"
+  },
+  "contentBtnAdd": {
+    "message": "添加"
+  },
+  "contentBtnDelete": {
+    "message": "删除"
+  },
+  "contentConfirmDelete": {
+    "message": "删除选项卡 \"[TITLE]\"？"
+  },
+  "contentEmptyTabs": {
+    "message": "没有保存的选项卡。"
+  },
+  "contentBtnHide": {
+    "message": "隐藏"
+  },
+  "contentBtnShow": {
+    "message": "显示"
+  },
+  "contentTabClock": {
+    "message": "时钟"
+  },
+  "contentUrlInvalid": {
+    "message": "无效的 URL。"
+  },
+  "contentEnableTitle": {
+    "message": "启用盲区"
+  },
+  "contentEnableDesc": {
+    "message": "将栏应用于整个当前窗口"
+  },
+  "contentColorTitle": {
+    "message": "颜色定制"
+  },
+  "contentPresetsTitle": {
+    "message": "设置集（预设）"
+  },
+  "contentWarningDesc": {
+    "message": "Iframe 和时钟选项卡在所有包含 ScreenDeadZone 的标签页之间不共享，因此每个标签页都会运行自己的时钟和 iframe，这会增加内存和处理器消耗。如果窗口包含太多标签页，请考虑不要启用 ScreenDeadZone。"
+  },
+  "contentPresetSave": {
+    "message": "保存"
+  },
+  "contentPresetInput": {
+    "message": "名称（例如：夜间、工作）"
+  },
+  "contentActiveIndicator": {
+    "message": "此窗口中的盲区处于活动状态"
+  },
+  "contentInactiveIndicator": {
+    "message": "盲区已禁用"
+  },
+  "contentAnchorTitle": {
+    "message": "栏位置"
+  },
+  "contentAnchorTop": {
+    "message": "顶部"
+  },
+  "contentAnchorBottom": {
+    "message": "底部"
+  },
+  "contentAnchorLeft": {
+    "message": "左侧"
+  },
+  "contentAnchorRight": {
+    "message": "右侧"
+  }
+}

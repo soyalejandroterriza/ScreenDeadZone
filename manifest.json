@@ -1,11 +1,26 @@
 {
   "manifest_version": 3,
-  "name": "Screen Dead Zone",
+  "name": "__MSG_extName__",
   "version": "1.0.0",
-  "description": "Determina una zona de tu pantalla en la que no se muestre el navegador.",
+  "description": "__MSG_extDesc__",
+  "default_locale": "en",
   "permissions": [
-    "storage"
+    "storage",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess"
   ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "iframe_bypass",
+        "enabled": true,
+        "path": "rules.json"
+      }
+    ]
+  },
   "action": {
     "default_popup": "popup.html",
     "default_icon": "icons/icon.png"
@@ -19,15 +34,7 @@
   "background": {
     "service_worker": "background.js"
   },
-  "commands": {
-    "toggle-dead-zone": {
-      "suggested_key": {
-        "default": "Ctrl+Shift+0",
-        "mac": "Command+Shift+0"
-      },
-      "description": "Activar/Desactivar la Zona Muerta en la ventana actual"
-    }
-  },
+
   "content_scripts": [
     {
       "matches": ["<all_urls>"],

@@ -1,0 +1,122 @@
+{
+  "extName": {
+    "message": "Screen Dead Zone"
+  },
+  "extDesc": {
+    "message": "Déterminez une zone sur votre écran où le navigateur ne sera pas affiché."
+  },
+  "cmdToggleDesc": {
+    "message": "Basculer la zone morte dans la fenêtre actuelle"
+  },
+  "popupLoading": {
+    "message": "Ouverture du panneau de contrôle..."
+  },
+  "popupWarningTitle": {
+    "message": "Impossible d'ouvrir ici"
+  },
+  "popupWarningDesc1": {
+    "message": "Pour des raisons de sécurité, Chrome bloque les extensions sur les pages système (comme l'onglet extensions, l'historique ou le Web Store)."
+  },
+  "popupWarningDesc2": {
+    "message": "Ouvrez n'importe quel site Web (comme Google ou votre page de test) et cliquez à nouveau."
+  },
+  "popupShortcut": {
+    "message": "Raccourci :"
+  },
+  "contentSettings": {
+    "message": "Paramètres"
+  },
+  "contentLayoutMode": {
+    "message": "Mode de disposition"
+  },
+  "contentResize": {
+    "message": "Redimensionner (Déplace le contenu)"
+  },
+  "contentRecommended": {
+    "message": "(Recommandé)"
+  },
+  "contentSpacer": {
+    "message": "Espaceur (Couvre le contenu)"
+  },
+  "contentBarHeight": {
+    "message": "Taille de la barre"
+  },
+  "contentBgColor": {
+    "message": "Couleur de fond"
+  },
+  "contentFgColor": {
+    "message": "Couleur de l'horloge"
+  },
+  "contentTabManager": {
+    "message": "Onglets de la barre"
+  },
+  "contentTabDesc": {
+    "message": "Ajoutez des sites Web pour les basculer en tant qu'onglets sur la barre. L'horloge sera toujours disponible par défaut."
+  },
+  "contentBtnAdd": {
+    "message": "Ajouter"
+  },
+  "contentBtnDelete": {
+    "message": "Supprimer"
+  },
+  "contentConfirmDelete": {
+    "message": "Supprimer l'onglet \"[TITLE]\" ?"
+  },
+  "contentEmptyTabs": {
+    "message": "Aucun onglet enregistré."
+  },
+  "contentBtnHide": {
+    "message": "Masquer"
+  },
+  "contentBtnShow": {
+    "message": "Afficher"
+  },
+  "contentTabClock": {
+    "message": "Horloge"
+  },
+  "contentUrlInvalid": {
+    "message": "URL invalide."
+  },
+  "contentEnableTitle": {
+    "message": "Activer la zone morte"
+  },
+  "contentEnableDesc": {
+    "message": "Applique la barre à l'ensemble de la fenêtre actuelle"
+  },
+  "contentColorTitle": {
+    "message": "Personnalisation des couleurs"
+  },
+  "contentPresetsTitle": {
+    "message": "Ensembles de paramètres (Préréglages)"
+  },
+  "contentWarningDesc": {
+    "message": "Les iframes et l'onglet de l'horloge ne sont pas partagés entre tous les onglets contenant ScreenDeadZone. Chaque onglet exécutera sa propre horloge et sa propre iframe, ce qui augmentera la consommation de mémoire et de processeur. Pensez à ne pas activer ScreenDeadZone dans une fenêtre contenant trop d'onglets."
+  },
+  "contentPresetSave": {
+    "message": "Enregistrer"
+  },
+  "contentPresetInput": {
+    "message": "Nom (ex. Nuit, Travail)"
+  },
+  "contentActiveIndicator": {
+    "message": "Zone morte active dans cette fenêtre"
+  },
+  "contentInactiveIndicator": {
+    "message": "Zone morte désactivée"
+  },
+  "contentAnchorTitle": {
+    "message": "Position de la barre"
+  },
+  "contentAnchorTop": {
+    "message": "Haut"
+  },
+  "contentAnchorBottom": {
+    "message": "Bas"
+  },
+  "contentAnchorLeft": {
+    "message": "Gauche"
+  },
+  "contentAnchorRight": {
+    "message": "Droite"
+  }
+}

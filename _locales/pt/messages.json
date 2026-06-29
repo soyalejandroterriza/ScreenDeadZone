@@ -1,0 +1,122 @@
+{
+  "extName": {
+    "message": "Screen Dead Zone"
+  },
+  "extDesc": {
+    "message": "Determine uma zona da sua tela onde o navegador não será exibido."
+  },
+  "cmdToggleDesc": {
+    "message": "Ativar/Desativar a Zona Morta na janela atual"
+  },
+  "popupLoading": {
+    "message": "Abrindo painel de controle..."
+  },
+  "popupWarningTitle": {
+    "message": "Não é possível abrir aqui"
+  },
+  "popupWarningDesc1": {
+    "message": "Por segurança, o Chrome bloqueia extensões em páginas do sistema (como a guia de extensões, histórico ou Web Store)."
+  },
+  "popupWarningDesc2": {
+    "message": "Abra qualquer site (como Google ou sua página de teste) e clique novamente."
+  },
+  "popupShortcut": {
+    "message": "Atalho:"
+  },
+  "contentSettings": {
+    "message": "Configurações"
+  },
+  "contentLayoutMode": {
+    "message": "Modo de Layout"
+  },
+  "contentResize": {
+    "message": "Redimensionar (Move o conteúdo)"
+  },
+  "contentRecommended": {
+    "message": "(Recomendado)"
+  },
+  "contentSpacer": {
+    "message": "Espaçador (Cobre o conteúdo)"
+  },
+  "contentBarHeight": {
+    "message": "Tamanho da Barra"
+  },
+  "contentBgColor": {
+    "message": "Cor de Fundo"
+  },
+  "contentFgColor": {
+    "message": "Cor do Relógio"
+  },
+  "contentTabManager": {
+    "message": "Abas da Barra"
+  },
+  "contentTabDesc": {
+    "message": "Adicione sites para alterná-los como abas na barra. O Relógio sempre estará disponível por padrão."
+  },
+  "contentBtnAdd": {
+    "message": "Adicionar"
+  },
+  "contentBtnDelete": {
+    "message": "Excluir"
+  },
+  "contentConfirmDelete": {
+    "message": "Excluir a aba \"[TITLE]\"?"
+  },
+  "contentEmptyTabs": {
+    "message": "Nenhuma aba salva."
+  },
+  "contentBtnHide": {
+    "message": "Esconder"
+  },
+  "contentBtnShow": {
+    "message": "Mostrar"
+  },
+  "contentTabClock": {
+    "message": "Relógio"
+  },
+  "contentUrlInvalid": {
+    "message": "URL inválida."
+  },
+  "contentEnableTitle": {
+    "message": "Ativar Zona Morta"
+  },
+  "contentEnableDesc": {
+    "message": "Aplica a barra a toda a janela atual"
+  },
+  "contentColorTitle": {
+    "message": "Personalização de Cores"
+  },
+  "contentPresetsTitle": {
+    "message": "Conjuntos de Configurações (Presets)"
+  },
+  "contentWarningDesc": {
+    "message": "Os iFrames e a guia do relógio não são compartilhados entre todas as abas que contêm ScreenDeadZone, por isso cada aba terá o seu próprio relógio e o seu próprio iFrame, aumentando o consumo de memória e processamento. Considere não ativar o ScreenDeadZone em uma janela que contenha muitas abas."
+  },
+  "contentPresetSave": {
+    "message": "Salvar"
+  },
+  "contentPresetInput": {
+    "message": "Nome (ex. Noite, Trabalho)"
+  },
+  "contentActiveIndicator": {
+    "message": "Zona Morta Ativa nesta Janela"
+  },
+  "contentInactiveIndicator": {
+    "message": "Zona Morta Desativada"
+  },
+  "contentAnchorTitle": {
+    "message": "Posição da Barra"
+  },
+  "contentAnchorTop": {
+    "message": "Cima"
+  },
+  "contentAnchorBottom": {
+    "message": "Baixo"
+  },
+  "contentAnchorLeft": {
+    "message": "Esquerda"
+  },
+  "contentAnchorRight": {
+    "message": "Direita"
+  }
+}

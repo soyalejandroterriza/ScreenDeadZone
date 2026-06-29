@@ -1,0 +1,122 @@
+{
+  "extName": {
+    "message": "Screen Dead Zone"
+  },
+  "extDesc": {
+    "message": "Determine a zone on your screen where the browser won't be displayed."
+  },
+  "cmdToggleDesc": {
+    "message": "Toggle the Dead Zone in the current window"
+  },
+  "popupLoading": {
+    "message": "Opening control panel..."
+  },
+  "popupWarningTitle": {
+    "message": "Cannot open here"
+  },
+  "popupWarningDesc1": {
+    "message": "For security reasons, Chrome blocks extensions on system pages (like extensions tab, history, or Web Store)."
+  },
+  "popupWarningDesc2": {
+    "message": "Open any website (like Google or your test page) and click again."
+  },
+  "popupShortcut": {
+    "message": "Shortcut:"
+  },
+  "contentSettings": {
+    "message": "Settings"
+  },
+  "contentLayoutMode": {
+    "message": "Layout Mode"
+  },
+  "contentResize": {
+    "message": "Resize (Moves content)"
+  },
+  "contentRecommended": {
+    "message": "(Recommended)"
+  },
+  "contentSpacer": {
+    "message": "Spacer (Covers content)"
+  },
+  "contentBarHeight": {
+    "message": "Bar Size"
+  },
+  "contentBgColor": {
+    "message": "Background Color"
+  },
+  "contentFgColor": {
+    "message": "Clock Color"
+  },
+  "contentTabManager": {
+    "message": "Bar Tabs"
+  },
+  "contentTabDesc": {
+    "message": "Add websites to toggle them as tabs on the bar. The Clock will always be available by default."
+  },
+  "contentBtnAdd": {
+    "message": "Add"
+  },
+  "contentBtnDelete": {
+    "message": "Delete"
+  },
+  "contentConfirmDelete": {
+    "message": "Delete tab \"[TITLE]\"?"
+  },
+  "contentEmptyTabs": {
+    "message": "No saved tabs."
+  },
+  "contentBtnHide": {
+    "message": "Hide"
+  },
+  "contentBtnShow": {
+    "message": "Show"
+  },
+  "contentTabClock": {
+    "message": "Clock"
+  },
+  "contentUrlInvalid": {
+    "message": "Invalid URL."
+  },
+  "contentEnableTitle": {
+    "message": "Enable Dead Zone"
+  },
+  "contentEnableDesc": {
+    "message": "Applies the bar to the entire current window"
+  },
+  "contentColorTitle": {
+    "message": "Color Customization"
+  },
+  "contentPresetsTitle": {
+    "message": "Settings Sets (Presets)"
+  },
+  "contentWarningDesc": {
+    "message": "Iframes and the clock tab are not shared among all tabs containing ScreenDeadZone, so each tab will run its own clock and iframe, increasing memory and processing consumption. Consider not activating ScreenDeadZone in a window with too many tabs."
+  },
+  "contentPresetSave": {
+    "message": "Save"
+  },
+  "contentPresetInput": {
+    "message": "Name (e.g. Night, Work)"
+  },
+  "contentActiveIndicator": {
+    "message": "Dead Zone Active in this Window"
+  },
+  "contentInactiveIndicator": {
+    "message": "Dead Zone Disabled"
+  },
+  "contentAnchorTitle": {
+    "message": "Bar Anchor Position"
+  },
+  "contentAnchorTop": {
+    "message": "Top"
+  },
+  "contentAnchorBottom": {
+    "message": "Bottom"
+  },
+  "contentAnchorLeft": {
+    "message": "Left"
+  },
+  "contentAnchorRight": {
+    "message": "Right"
+  }
+}

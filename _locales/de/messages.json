@@ -1,0 +1,122 @@
+{
+  "extName": {
+    "message": "Screen Dead Zone"
+  },
+  "extDesc": {
+    "message": "Legen Sie einen Bereich auf Ihrem Bildschirm fest, in dem der Browser nicht angezeigt wird."
+  },
+  "cmdToggleDesc": {
+    "message": "Dead Zone im aktuellen Fenster umschalten"
+  },
+  "popupLoading": {
+    "message": "Bedienfeld wird geöffnet..."
+  },
+  "popupWarningTitle": {
+    "message": "Kann hier nicht geöffnet werden"
+  },
+  "popupWarningDesc1": {
+    "message": "Aus Sicherheitsgründen blockiert Chrome Erweiterungen auf Systemseiten (wie Erweiterungs-Tab, Verlauf oder Web Store)."
+  },
+  "popupWarningDesc2": {
+    "message": "Öffnen Sie eine beliebige Website (wie Google oder Ihre Testseite) und klicken Sie erneut."
+  },
+  "popupShortcut": {
+    "message": "Verknüpfung:"
+  },
+  "contentSettings": {
+    "message": "Einstellungen"
+  },
+  "contentLayoutMode": {
+    "message": "Layout-Modus"
+  },
+  "contentResize": {
+    "message": "Größe ändern (Verschiebt Inhalt)"
+  },
+  "contentRecommended": {
+    "message": "(Empfohlen)"
+  },
+  "contentSpacer": {
+    "message": "Abstandshalter (Verdeckt Inhalt)"
+  },
+  "contentBarHeight": {
+    "message": "Leistengröße"
+  },
+  "contentBgColor": {
+    "message": "Hintergrundfarbe"
+  },
+  "contentFgColor": {
+    "message": "Uhrenfarbe"
+  },
+  "contentTabManager": {
+    "message": "Leisten-Tabs"
+  },
+  "contentTabDesc": {
+    "message": "Fügen Sie Websites hinzu, um sie als Tabs auf der Leiste umzuschalten. Die Uhr ist standardmäßig immer verfügbar."
+  },
+  "contentBtnAdd": {
+    "message": "Hinzufügen"
+  },
+  "contentBtnDelete": {
+    "message": "Löschen"
+  },
+  "contentConfirmDelete": {
+    "message": "Tab \"[TITLE]\" löschen?"
+  },
+  "contentEmptyTabs": {
+    "message": "Keine gespeicherten Tabs."
+  },
+  "contentBtnHide": {
+    "message": "Verbergen"
+  },
+  "contentBtnShow": {
+    "message": "Anzeigen"
+  },
+  "contentTabClock": {
+    "message": "Uhr"
+  },
+  "contentUrlInvalid": {
+    "message": "Ungültige URL."
+  },
+  "contentEnableTitle": {
+    "message": "Dead Zone aktivieren"
+  },
+  "contentEnableDesc": {
+    "message": "Wendet die Leiste auf das gesamte aktuelle Fenster an"
+  },
+  "contentColorTitle": {
+    "message": "Farbanpassung"
+  },
+  "contentPresetsTitle": {
+    "message": "Einstellungssätze (Presets)"
+  },
+  "contentWarningDesc": {
+    "message": "Iframes und der Uhr-Tab werden nicht zwischen allen Tabs geteilt, die ScreenDeadZone enthalten. Jeder Tab führt seine eigene Uhr und seinen eigenen Iframe aus, was den Speicher- und Prozessorverbrauch erhöht. Vermeiden Sie es, ScreenDeadZone in einem Fenster mit zu vielen Tabs zu aktivieren."
+  },
+  "contentPresetSave": {
+    "message": "Speichern"
+  },
+  "contentPresetInput": {
+    "message": "Name (z. B. Nacht, Arbeit)"
+  },
+  "contentActiveIndicator": {
+    "message": "Dead Zone in diesem Fenster aktiv"
+  },
+  "contentInactiveIndicator": {
+    "message": "Dead Zone deaktiviert"
+  },
+  "contentAnchorTitle": {
+    "message": "Leistenposition"
+  },
+  "contentAnchorTop": {
+    "message": "Oben"
+  },
+  "contentAnchorBottom": {
+    "message": "Unten"
+  },
+  "contentAnchorLeft": {
+    "message": "Links"
+  },
+  "contentAnchorRight": {
+    "message": "Rechts"
+  }
+}
