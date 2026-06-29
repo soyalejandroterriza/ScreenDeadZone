@@ -533,18 +533,10 @@
           .container[data-anchor="left"] .dz-tabs-container { right: 8px; }
           .container[data-anchor="right"] .dz-tabs-container { left: 8px; }
           
+          /* En la barra vertical mostramos el texto con tamaño de fuente menor si es necesario */
           .container[data-anchor="left"] .toggle-btn,
           .container[data-anchor="right"] .toggle-btn {
-            flex-direction: column;
-            padding: 8px;
-          }
-          .container[data-anchor="left"] .toggle-btn span,
-          .container[data-anchor="right"] .toggle-btn span {
-            display: none; /* Oculta texto en la barra vertical por falta de espacio */
-          }
-          .container[data-anchor="left"] .dz-tab.active span,
-          .container[data-anchor="right"] .dz-tab.active span {
-            display: none;
+            padding: 6px 10px;
           }
 
           .container:hover .dz-tabs-container {
@@ -572,9 +564,8 @@
           }
           .show-btn.pos-bottom { bottom: 12px; left: 50%; transform: translateX(-50%); }
           .show-btn.pos-top { top: 12px; left: 50%; transform: translateX(-50%); }
-          .show-btn.pos-left { left: 12px; top: 50%; transform: translateY(-50%); flex-direction: column; }
-          .show-btn.pos-right { right: 12px; top: 50%; transform: translateY(-50%); flex-direction: column; }
-          .show-btn.pos-left span, .show-btn.pos-right span { display: none; }
+          .show-btn.pos-left { left: 12px; top: 50%; transform: translateY(-50%); }
+          .show-btn.pos-right { right: 12px; top: 50%; transform: translateY(-50%); }
           .show-btn:hover { opacity: 1 !important; }
 
           .container.minimized {
@@ -592,9 +583,6 @@
           
           <div class="dz-tabs-container">
             <button class="toggle-btn hide-btn" title="${chrome.i18n.getMessage("contentBtnHide")}">
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
               <span>${chrome.i18n.getMessage("contentBtnHide")}</span>
             </button>
             ${tabsHtml}
@@ -602,9 +590,6 @@
         </div>
         
         <button class="toggle-btn show-btn" title="${chrome.i18n.getMessage("contentBtnShow")}">
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="18 15 12 9 6 15"></polyline>
-          </svg>
           <span>${chrome.i18n.getMessage("contentBtnShow")}</span>
         </button>
       `;
