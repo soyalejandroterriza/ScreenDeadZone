@@ -71,19 +71,13 @@ Sigue estos sencillos pasos para instalar la extensión de forma manual en tu na
 
 ---
 
-## 🎥 Integración con Cámaras de Seguridad (RTSP)
+## 🔌 Compatibilidad con Iframes
 
-Si tienes una cámara de seguridad local que transmite mediante el protocolo RTSP y quieres verla en tiempo real en tu Zona Muerta:
+Screen Dead Zone permite cargar cualquier página o recurso web directamente dentro de la zona muerta utilizando iframes. Esto es sumamente útil para integrar en tu espacio de trabajo:
 
-1.  Usa un puente local como [go2rtc](https://github.com/AlexxIT/go2rtc) o [Scrypted](https://github.com/koush/scrypted) para convertir el feed RTSP a WebRTC (latencia cero).
-2.  Añade tu cámara en el archivo `go2rtc.yaml`:
-    ```yaml
-    streams:
-      mi_camara: rtsp://usuario:contraseña@IP_LOCAL:554/stream
-    ```
-3.  Inicia `go2rtc` and abre `http://localhost:1984`.
-4.  Copia el enlace de WebRTC (ej. `http://localhost:1984/stream.html?src=mi_camara`).
-5.  Abre el menú de configuración de Screen Dead Zone, añade la URL y disfruta de tu stream en tiempo real compartiendo el mismo estado de pestañas.
+*   **Dashboards de control:** Paneles de domótica (como Home Assistant), paneles de monitorización o gráficas en tiempo real.
+*   **Herramientas de productividad:** Calendarios compartidos, gestores de tareas en línea o reproductores multimedia web.
+*   **Recursos locales:** Web apps locales, cámaras de seguridad locales y cualquier contenido que se pueda visualizar a través de un navegador.
 
 ---
 
