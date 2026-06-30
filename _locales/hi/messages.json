@@ -1,9 +1,15 @@
 {
+  "contentMixedContentTitle": {
+    "message": "मिश्रित सामग्री अवरुद्ध"
+  },
+  "contentMixedContentDesc": {
+    "message": "सुरक्षा कारणों से एक सुरक्षित पेज (https://) के भीतर असुरक्षित पेज (http://) लोड नहीं किया जा सकता। कृपया https:// URL का उपयोग करें।"
+  },
   "extName": {
     "message": "Screen Dead Zone"
   },
   "extDesc": {
-    "message": "अपनी स्क्रीन पर एक क्षेत्र निर्धारित करें जहां ब्राउज़र प्रदर्शित नहीं होगा।"
+    "message": "ब्राउज़र का एक क्षेत्र निर्धारित करें जहां सामग्री सीमित होगी।"
   },
   "cmdToggleDesc": {
     "message": "वर्तमान विंडो में डेड ज़ोन को टॉगल करें"
@@ -118,5 +124,12 @@
   },
   "contentAnchorRight": {
     "message": "दाएं"
+  },
+  "contentIframeDisclaimer": {
+    "message": "कुछ वेबसाइटों पर उनकी सुरक्षा नीतियों (मिश्रित सामग्री या CSP) के कारण बाहरी पेज (iframe) लोड करना काम नहीं कर सकता है या एक्सटेंशन कंसोल में त्रुटियां पैदा कर सकता है।"
+  },
+  "contentGoogleDisclaimer": {
+    "message": "यह एक्सटेंशन Google पृष्ठों (खोज, क्रोम वेब स्टोर, आदि) पर उनकी सख्त सुरक्षा नीतियों (CSP) के कारण ठीक से काम नहीं कर सकता है।",
+    "description": "Disclaimer indicating that the extension might not work on Google pages"
   }
 }

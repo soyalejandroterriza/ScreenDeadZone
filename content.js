@@ -1,4 +1,35 @@
 (function() {
+
+  // Wrappers seguros para evitar errores de contexto invalidado (Extension context invalidated)
+  const safeStorageSet = (data, callback) => {
+    try {
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.set(data, callback);
+      }
+    } catch (e) {
+      console.warn("ScreenDeadZone: El contexto de la extensión se ha invalidado. Por favor, recarga la página.");
+    }
+  };
+
+  const safeStorageGet = (keys, callback) => {
+    try {
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.get(keys, callback);
+      }
+    } catch (e) {
+      console.warn("ScreenDeadZone: El contexto de la extensión se ha invalidado. Por favor, recarga la página.");
+    }
+  };
+
+  const safeSendMessage = (message, callback) => {
+    try {
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id) {
+        chrome.runtime.sendMessage(message, callback);
+      }
+    } catch (e) {
+      console.warn("ScreenDeadZone: El contexto de la extensión se ha invalidado. Por favor, recarga la página.");
+    }
+  };
   // Evitar inyecciones duplicadas
   if (window.hasScreenDeadZoneInjected) return;
   window.hasScreenDeadZoneInjected = true;
@@ -183,6 +214,7 @@
 
     // Eliminar iframe existente si lo hay
     container.querySelectorAll('.dz-iframe').forEach(iframe => iframe.remove());
+    container.querySelectorAll('.dz-iframe-placeholder').forEach(el => el.remove());
 
     // Solo inyectar si la pestaña actual es visible, hay una URL activa y la barra está habilitada y no minimizada
     const isVisible = !document.hidden;
@@ -192,6 +224,47 @@
       const idx = parseInt(activeTabId.replace('url-', ''), 10);
       if (embedUrls && embedUrls[idx]) {
         const urlObj = embedUrls[idx];
+        
+        const isSecurePage = window.location.protocol === 'https:';
+        const isUrlInsecure = urlObj.url.startsWith('http:') && 
+                              !urlObj.url.includes('://localhost') && 
+                              !urlObj.url.includes('://127.0.0.1');
+
+        // 1. Crear el placeholder de carga y de advertencia por detrás
+        const placeholder = document.createElement('div');
+        placeholder.className = 'dz-iframe-placeholder';
+        placeholder.style.cssText = `
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          color: #888888;
+          font-size: 13px;
+          font-family: system-ui, -apple-system, sans-serif;
+          z-index: 1;
+          background: var(--sdz-bg-color, #000000);
+          padding: 20px;
+          text-align: center;
+          box-sizing: border-box;
+          gap: 6px;
+        `;
+        placeholder.innerHTML = `
+          <span style="font-size: 20px;">🌐</span>
+          <strong style="color: var(--sdz-fg-color, #ffffff); opacity: 0.95;">${chrome.i18n.getMessage("contentLoadingIframe") || "Cargando contenido..."}</strong>
+          <p style="font-size: 11px; margin: 0; opacity: 0.7; max-width: 320px; line-height: 1.4;">
+            ${chrome.i18n.getMessage("contentIframeWarning") || "Si la página no carga, puede ser debido a limitaciones de seguridad (Mixed Content o CSP)."}
+          </p>
+          <a href="${urlObj.url}" target="_blank" style="margin-top: 6px; color: #3b82f6; text-decoration: underline; pointer-events: auto; font-size: 12px; font-weight: 500; z-index: 3;">
+            ${chrome.i18n.getMessage("contentIframeOpenNewTab") || "Abrir en una pestaña nueva ↗"}
+          </a>
+        `;
+
+        // 2. Crear el iframe por encima
         const iframe = document.createElement('iframe');
         iframe.className = 'dz-iframe';
         iframe.id = `iframe-${activeTabId}`;
@@ -199,13 +272,17 @@
         iframe.style.setProperty('width', '100%', 'important');
         iframe.style.setProperty('height', '100%', 'important');
         iframe.style.setProperty('border', 'none', 'important');
-        iframe.style.setProperty('background', 'transparent', 'important');
+        iframe.style.setProperty('background', '#ffffff', 'important');
         iframe.style.setProperty('overflow', 'auto', 'important');
+        iframe.style.setProperty('position', 'relative', 'important');
+        iframe.style.setProperty('z-index', '2', 'important');
         
         const tabsContainer = container.querySelector('.dz-tabs-container');
         if (tabsContainer) {
+          container.insertBefore(placeholder, tabsContainer);
           container.insertBefore(iframe, tabsContainer);
         } else {
+          container.appendChild(placeholder);
           container.appendChild(iframe);
         }
       }
@@ -420,6 +497,12 @@
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             overflow: hidden;
           }
+          .container[data-anchor="left"],
+          .container[data-anchor="right"] {
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 24px 8px;
+          }
           .clock-container {
             display: ${activeTabId === 'clock' ? 'flex' : 'none'};
             width: 100%;
@@ -427,6 +510,11 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+          }
+          .container[data-anchor="left"] .clock-container,
+          .container[data-anchor="right"] .clock-container {
+            flex-grow: 1;
+            height: auto;
           }
           .clock-widget {
             text-align: center;
@@ -439,7 +527,7 @@
             height: 100%;
           }
           .clock-time {
-            font-size: min(20vw, calc(var(--sdz-size) * 0.6)) !important;
+            font-size: min(calc(var(--sdz-size) * 0.6), 18vw) !important;
             font-weight: 700;
             letter-spacing: 0.01em;
             line-height: 1;
@@ -449,10 +537,10 @@
           }
           .container[data-anchor="left"] .clock-time,
           .container[data-anchor="right"] .clock-time {
-            font-size: min(20vh, calc(var(--sdz-size) * 0.4)) !important;
+            font-size: min(calc(var(--sdz-size) * 0.18), 15vh) !important;
           }
           .clock-date {
-            font-size: min(6vw, calc(var(--sdz-size) * 0.2)) !important;
+            font-size: min(calc(var(--sdz-size) * 0.3), 9vw) !important;
             font-weight: 500;
             opacity: 0.8;
             letter-spacing: 0.05em;
@@ -463,14 +551,18 @@
           }
           .container[data-anchor="left"] .clock-date,
           .container[data-anchor="right"] .clock-date {
-            font-size: min(6vh, calc(var(--sdz-size) * 0.15)) !important;
+            font-size: min(calc(var(--sdz-size) * 0.09), 7.5vh) !important;
           }
           .container.mini-mode .clock-date {
             display: none;
           }
           .container.mini-mode .clock-time {
-            font-size: 20px;
+            font-size: min(calc(var(--sdz-size) * 0.7), 20vw) !important;
             margin-bottom: 0;
+          }
+          .container[data-anchor="left"].mini-mode .clock-time,
+          .container[data-anchor="right"].mini-mode .clock-time {
+            font-size: min(calc(var(--sdz-size) * 0.22), 20vh) !important;
           }
           
           /* Botones para Esconder/Mostrar la barra de forma ágil */
@@ -507,31 +599,21 @@
           /* Contenedor de pestañas */
           .dz-tabs-container {
             position: absolute;
-            bottom: 8px;
+            bottom: 16px;
             left: 50%;
+            top: auto;
+            right: auto;
             transform: translateX(-50%);
             display: flex;
             gap: 8px;
             align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            max-width: calc(100% - 32px);
             z-index: 2147483647;
             opacity: 0.35;
             transition: opacity 0.2s ease;
           }
-          .container[data-anchor="top"] .dz-tabs-container {
-            bottom: auto;
-            top: 8px;
-          }
-          .container[data-anchor="left"] .dz-tabs-container,
-          .container[data-anchor="right"] .dz-tabs-container {
-            flex-direction: column;
-            left: auto;
-            right: auto;
-            transform: translateY(-50%);
-            top: 50%;
-            bottom: auto;
-          }
-          .container[data-anchor="left"] .dz-tabs-container { right: 8px; }
-          .container[data-anchor="right"] .dz-tabs-container { left: 8px; }
           
           /* En la barra vertical mostramos el texto con tamaño de fuente menor si es necesario */
           .container[data-anchor="left"] .toggle-btn,
@@ -631,7 +713,7 @@
           }
           
           // Guardar estado
-          chrome.storage.local.set({ deadZoneActiveTab: activeTabId });
+          safeStorageSet({ deadZoneActiveTab: activeTabId });
           
           updateActiveIframe();
           
@@ -678,7 +760,7 @@
   };
 
   const loadSettingsAndShowMenu = () => {
-    chrome.runtime.sendMessage({ type: "GET_TAB_STATE" }, (state) => {
+    safeSendMessage({ type: "GET_TAB_STATE" }, (state) => {
       if (state) {
         isEnabled = state.isEnabled || false;
       }
@@ -1190,7 +1272,7 @@
             <div class="header-left">
               <div class="header-title-box">
                 <span class="logo-title">ScreenDeadZone</span>
-                <p class="info-p">${chrome.i18n.getMessage("contentDesc") || "Determina una zona de tu pantalla en la que no se muestre el navegador."}</p>
+                <p class="info-p">${chrome.i18n.getMessage("extDesc") || "Determina una zona del navegador en la que se limite el contenido."}</p>
               </div>
             </div>
             
@@ -1323,6 +1405,14 @@
                     <button id="menu-add-url-btn" class="preset-btn">${chrome.i18n.getMessage("contentBtnAdd")}</button>
                   </div>
                   <p class="control-desc">${chrome.i18n.getMessage("contentTabDesc")}</p>
+                  <p class="control-desc" style="color: #f87171; font-weight: 500; margin-top: 4px; display: flex; gap: 4px; align-items: flex-start;">
+                    <span>⚠️</span>
+                    <span>${chrome.i18n.getMessage("contentIframeDisclaimer")}</span>
+                  </p>
+                  <p class="control-desc" style="color: #38bdf8; font-weight: 500; margin-top: 4px; display: flex; gap: 4px; align-items: flex-start;">
+                    <span>ℹ️</span>
+                    <span>${chrome.i18n.getMessage("contentGoogleDisclaimer")}</span>
+                  </p>
                 </div>
                 <div class="presets-list" id="menu-urls-list">
                   <!-- Renderizados por JS -->
@@ -1396,7 +1486,7 @@
       anchorPos = e.target.value;
       updateLayout();
       updateMenuBounds();
-      chrome.storage.local.set({ deadZoneAnchor: anchorPos });
+      safeStorageSet({ deadZoneAnchor: anchorPos });
     }));
 
     const heightRange = menuShadow.querySelector('#menu-height-range');
@@ -1446,7 +1536,7 @@
       updateLayout();
       updateMenuBounds();
 
-      chrome.runtime.sendMessage({
+      safeSendMessage({
         type: "SET_TAB_STATE",
         windowId: true,
         isEnabled: enableToggle.checked
@@ -1467,15 +1557,15 @@
     heightRange.addEventListener('input', (e) => {
       const val = e.target.value;
       heightValSpan.textContent = val;
-      chrome.storage.local.set({ deadZoneHeight: parseInt(val, 10) });
+      safeStorageSet({ deadZoneHeight: parseInt(val, 10) });
     });
 
     // Color Pickers
     bgColorInp.addEventListener('input', (e) => {
-      chrome.storage.local.set({ deadZoneBgColor: e.target.value });
+      safeStorageSet({ deadZoneBgColor: e.target.value });
     });
     fgColorInp.addEventListener('input', (e) => {
-      chrome.storage.local.set({ deadZoneFgColor: e.target.value });
+      safeStorageSet({ deadZoneFgColor: e.target.value });
     });
 
     // URLs / Pestañas
@@ -1490,7 +1580,7 @@
         return;
       }
       embedUrls.push({ url, title: new URL(url).hostname });
-      chrome.storage.local.set({ deadZoneEmbedUrls: embedUrls }, () => {
+      safeStorageSet({ deadZoneEmbedUrls: embedUrls }, () => {
         urlInp.value = '';
         renderMenuUrls();
         updateLayout(); // Refresh host tabs
@@ -1501,7 +1591,7 @@
     radioLayoutModes.forEach(radio => {
       radio.addEventListener('change', (e) => {
         if (e.target.checked) {
-          chrome.storage.local.set({ deadZoneMode: e.target.value });
+          safeStorageSet({ deadZoneMode: e.target.value });
         }
       });
     });
@@ -1534,7 +1624,7 @@
         savedPresets.push(presetData);
       }
 
-      chrome.storage.local.set({ deadZonePresets: savedPresets }, () => {
+      safeStorageSet({ deadZonePresets: savedPresets }, () => {
         presetNameInp.value = '';
         renderMenuPresets();
       });
@@ -1567,15 +1657,15 @@
           embedUrls.splice(index, 1);
           if (activeTabId === 'url-' + index) {
              activeTabId = 'clock';
-             chrome.storage.local.set({ deadZoneActiveTab: 'clock' });
+             safeStorageSet({ deadZoneActiveTab: 'clock' });
           } else if (activeTabId.startsWith('url-')) {
              const currentIdx = parseInt(activeTabId.split('-')[1]);
              if (currentIdx > index) {
                 activeTabId = 'url-' + (currentIdx - 1);
-                chrome.storage.local.set({ deadZoneActiveTab: activeTabId });
+                safeStorageSet({ deadZoneActiveTab: activeTabId });
              }
           }
-          chrome.storage.local.set({ deadZoneEmbedUrls: embedUrls }, () => {
+          safeStorageSet({ deadZoneEmbedUrls: embedUrls }, () => {
             renderMenuUrls();
             updateLayout();
           });
@@ -1616,7 +1706,7 @@
       item.querySelector('.delete-action').addEventListener('click', () => {
         if (confirm(`¿Eliminar preset "${preset.name}"?`)) {
           savedPresets.splice(index, 1);
-          chrome.storage.local.set({ deadZonePresets: savedPresets }, renderMenuPresets);
+          safeStorageSet({ deadZonePresets: savedPresets }, renderMenuPresets);
         }
       });
 
@@ -1626,7 +1716,7 @@
 
   // Cargar preset dentro del menú
   const loadMenuPreset = (preset) => {
-    chrome.storage.local.set({
+    safeStorageSet({
       deadZoneHeight: preset.height,
       deadZoneBgColor: preset.bgColor,
       deadZoneFgColor: preset.fgColor,
@@ -1709,7 +1799,7 @@
 
   // Cargar configuraciones globales e inicializar estado de la ventana
   const init = () => {
-    chrome.storage.local.get([
+    safeStorageGet([
       'deadZoneHeight', 
       'deadZoneMode', 
       'deadZoneBgColor', 
@@ -1732,12 +1822,12 @@
         embedUrls = res.deadZoneEmbedUrls;
       } else if (res.deadZoneEmbedUrl) {
         embedUrls = [{ url: res.deadZoneEmbedUrl, title: new URL(res.deadZoneEmbedUrl).hostname }];
-        chrome.storage.local.set({ deadZoneEmbedUrls: embedUrls, deadZoneActiveTab: res.deadZoneDisplayMode === 'iframe' ? 'url-0' : 'clock' });
+        safeStorageSet({ deadZoneEmbedUrls: embedUrls, deadZoneActiveTab: res.deadZoneDisplayMode === 'iframe' ? 'url-0' : 'clock' });
       }
       if (res.deadZonePresets !== undefined) savedPresets = res.deadZonePresets;
 
       // Consultar el estado activo específico de esta ventana al background script
-      chrome.runtime.sendMessage({ type: "GET_TAB_STATE" }, (state) => {
+      safeSendMessage({ type: "GET_TAB_STATE" }, (state) => {
         if (chrome.runtime.lastError) {
           isEnabled = false;
         } else if (state) {

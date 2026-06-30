@@ -1,9 +1,15 @@
 {
+  "contentMixedContentTitle": {
+    "message": "混合内容已被拦截"
+  },
+  "contentMixedContentDesc": {
+    "message": "由于浏览器安全策略，无法在安全页面（https://）中加载非安全页面（http://）。请使用安全的 https:// 网址。"
+  },
   "extName": {
     "message": "Screen Dead Zone"
   },
   "extDesc": {
-    "message": "在屏幕上确定一个不显示浏览器的区域。"
+    "message": "在浏览器中确定一个限制内容的区域。"
   },
   "cmdToggleDesc": {
     "message": "在当前窗口切换盲区"
@@ -118,5 +124,12 @@
   },
   "contentAnchorRight": {
     "message": "右侧"
+  },
+  "contentIframeDisclaimer": {
+    "message": "由于某些网站的安全策略（混合内容或 CSP），加载外部页面（iframe）可能无法正常工作，或者可能会导致扩展控制台中出现错误。"
+  },
+  "contentGoogleDisclaimer": {
+    "message": "由于其严格的安全政策（CSP），此扩展程序可能无法在 Google 页面（搜索、Chrome 网上应用店等）上正常运行。",
+    "description": "Disclaimer indicating that the extension might not work on Google pages"
   }
 }

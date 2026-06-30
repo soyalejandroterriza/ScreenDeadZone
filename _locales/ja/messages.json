@@ -1,9 +1,15 @@
 {
+  "contentMixedContentTitle": {
+    "message": "混在コンテンツがブロックされました"
+  },
+  "contentMixedContentDesc": {
+    "message": "ブラウザのセキュリティポリシーにより、安全なページ（https://）内に安全でないページ（http://）を読み込むことはできません。https:// のURLを使用してください。"
+  },
   "extName": {
     "message": "Screen Dead Zone"
   },
   "extDesc": {
-    "message": "ブラウザが表示されない画面上の領域を決定します。"
+    "message": "コンテンツが制限されるブラウザの領域を決定します。"
   },
   "cmdToggleDesc": {
     "message": "現在のウィンドウでデッドゾーンを切り替える"
@@ -118,5 +124,12 @@
   },
   "contentAnchorRight": {
     "message": "右"
+  },
+  "contentIframeDisclaimer": {
+    "message": "外部ページ（iframe）の読み込みは、サイトのセキュリティポリシー（混在コンテンツまたはCSP）によって動作しない場合や、拡張機能のコンソールにエラーが発生する場合があります。"
+  },
+  "contentGoogleDisclaimer": {
+    "message": "この拡張機能は、厳格なセキュリティポリシー（CSP）のため、Googleページ（検索、Chromeウェブストアなど）では正しく機能しない場合があります。",
+    "description": "Disclaimer indicating that the extension might not work on Google pages"
   }
 }

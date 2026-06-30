@@ -1,9 +1,15 @@
 {
+  "contentMixedContentTitle": {
+    "message": "Contenu mixte bloqué"
+  },
+  "contentMixedContentDesc": {
+    "message": "Impossible de charger une page non sécurisée (http://) dans une page sécurisée (https://) en raison des politiques de sécurité. Veuillez utiliser une URL https://."
+  },
   "extName": {
     "message": "Screen Dead Zone"
   },
   "extDesc": {
-    "message": "Déterminez une zone sur votre écran où le navigateur ne sera pas affiché."
+    "message": "Déterminez une zone du navigateur dans laquelle le contenu est limité."
   },
   "cmdToggleDesc": {
     "message": "Basculer la zone morte dans la fenêtre actuelle"
@@ -118,5 +124,12 @@
   },
   "contentAnchorRight": {
     "message": "Droite"
+  },
+  "contentIframeDisclaimer": {
+    "message": "Le chargement de pages externes (iframes) peut ne pas fonctionner ou provoquer des erreurs dans la console de l'extension sur certains sites en raison de leurs politiques de sécurité (Mixed Content ou CSP)."
+  },
+  "contentGoogleDisclaimer": {
+    "message": "Cette extension peut ne pas fonctionner correctement sur les pages Google (recherche, Chrome Web Store, etc.) en raison de leurs politiques de sécurité strictes (CSP).",
+    "description": "Disclaimer indicating that the extension might not work on Google pages"
   }
 }
